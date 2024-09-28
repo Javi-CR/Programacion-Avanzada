@@ -1,0 +1,54 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutDash.cshtml";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Iniciar Sesión</h1>
+    
+</div>
+
+<!-- Login Section -->
+<section id="login" class="contact section">
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Información adicional si es necesario -->
+        <div class="info-wrap" data-aos="fade-up" data-aos-delay="200">
+            <div class="row gy-5">
+                <div class="col-lg-12 text-center">
+                    <h2>Bienvenido</h2>
+                    <p>Por favor, inicia sesión para acceder a tu cuenta.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <form action="forms/login.php" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="300">
+            <div class="row gy-4 d-flex justify-content-center">
+
+                <div class="col-md-8">
+                    <input type="email" name="email" class="form-control" style="max-width: 400px; margin: 0 auto;" placeholder="Tu correo electrónico" required="">
+                </div>
+
+                <div class="col-md-8">
+                    <input type="password" class="form-control" style="max-width: 400px; margin: 0 auto;" name="password" placeholder="Tu contraseña" required="">
+                </div>
+
+                <div class="col-md-12 text-center">
+                    <button type="submit" style="max-width: 200px; margin: 0 auto;">Iniciar Sesión</button>
+                </div>
+
+            </div>
+
+            <div class="row text-center mt-4">
+                <div class="col-md-12">
+                    <p><a asp-area="" asp-controller="Home" asp-action="RecuperarCuenta">¿Olvidaste tu contraseña?</a></p>
+                    <p>¿No tienes una cuenta? <a asp-area="" asp-controller="Home" asp-action="Register">Regístrate aquí</a></p>
+                </div>
+            </div>
+
+        </form><!-- End Login Form -->
+
+    </div>
+
+</section><!-- /Login Section -->

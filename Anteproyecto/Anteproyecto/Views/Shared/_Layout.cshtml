@@ -41,7 +41,7 @@
     <header id="header" class="header d-flex align-items-center sticky-top">
         <div class="container-fluid position-relative d-flex align-items-center justify-content-between">
 
-            <a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+            <a href="@Url.Action("Index","Home")" class="logo d-flex align-items-center me-auto me-xl-0">
                 <!-- Uncomment the line below if you also wish to use an image logo -->
                 <!-- <img src="assets/img/logo.png" alt=""> -->
                 <i class="bi bi-camera"></i>
@@ -50,7 +50,7 @@
 
             <nav id="navmenu" class="navmenu">
                 <ul>
-                    <li><a href="index.html" class="active">Home<br></a></li>
+                    <li><a href="@Url.Action("Index","Home")" class="active">Home<br></a></li>
                     <li><a href="about.html">About</a></li>
                     <li class="dropdown">
                         <a href="gallery.html"><span>Gallery</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
@@ -80,10 +80,10 @@
             </nav>
 
             <div class="header-social-links">
-                <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
-                <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
-                <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+
+                <a asp-area="" asp-controller="Home" asp-action="Login" class="active">Iniciar Sesión<br></a>
+                <a asp-area="" asp-controller="Home" asp-action="Register" class="active">Registrarse<br></a>
+
             </div>
 
         </div>
