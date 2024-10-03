@@ -23,11 +23,14 @@ namespace Anteproyecto.Controllers
             return View();
         }
 
-        [Route("RecuperarCuenta")]
-        public IActionResult RecuperarCuenta()
+        [Route("AccountRecovery")]
+        public IActionResult AccountRecovery()
+        [Route("RecoverAccount")]
+        public IActionResult RecoverAccount()
         {
             return View();
         }
+
     }
 
 }
