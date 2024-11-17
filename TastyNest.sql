@@ -76,3 +76,17 @@ CREATE TABLE Favorites (
     CONSTRAINT FK_Favorites_Recipes FOREIGN KEY (RecipeId) REFERENCES Recipes(Id) ON DELETE NO ACTION
 );
 GO
+
+-- Cambios RicardoA
+
+-- Eliminar la columna Descripcion por ser innecesaria.
+IF EXISTS (
+    SELECT 1
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_NAME = 'Recipes' AND COLUMN_NAME = 'Description'
+)
+BEGIN
+    ALTER TABLE Recipes DROP COLUMN Description;
+END;
+GO
+
