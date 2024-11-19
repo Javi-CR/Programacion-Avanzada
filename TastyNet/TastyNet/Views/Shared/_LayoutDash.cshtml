@@ -4,174 +4,40 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Tasty Nest</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
-
-    <!-- Favicons -->
-    <link href="img/favicon.png" rel="icon">
-    <link href="img/apple-touch-icon.png" rel="apple-touch-icon">
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com" rel="preconnect">
-    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Cardo:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-
-    <!-- Vendor CSS Files -->
+    <title>@ViewData["Title"] - Admin Panel</title>
     <link href="~/lib/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="~/lib/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-    <link href="~/lib/vendor/aos/aos.css" rel="stylesheet">
-    <link href="~/lib/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-    <link href="~/lib/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
-
-    <!-- Main CSS File -->
     <link href="~/css/main.css" rel="stylesheet">
-
-    <!-- =======================================================
-    * Template Name: PhotoFolio
-    * Template URL: https://bootstrapmade.com/photofolio-bootstrap-photography-website-template/
-    * Updated: Aug 07 2024 with Bootstrap v5.3.3
-    * Author: BootstrapMade.com
-    * License: https://bootstrapmade.com/license/
-    ======================================================== -->
 </head>
 
-<body class="index-page">
-
+<body>
     <header id="header" class="header d-flex align-items-center sticky-top">
-        <div class="container-fluid position-relative d-flex align-items-center justify-content-between">
-
-            <a href="@Url.Action("Index","Home")" class="logo d-flex align-items-center me-auto me-xl-0">
-                <!-- Uncomment the line below if you also wish to use an image logo -->
-                <!-- <img src="assets/img/logo.png" alt=""> -->
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <a href="@Url.Action("Index", "Dashboard")" class="logo">
                 <i class="bi bi-cup-straw"></i>
-                <h1 class="sitename">TastyNest</h1>
+                <h1 class="sitename">TastyNest Dashboard</h1>
             </a>
-
             <nav id="navmenu" class="navmenu">
                 <ul>
-                    <li><a href="@Url.Action("Index","Home")" class="active">Home<br></a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li class="dropdown">
-                        <a href="gallery.html"><span>Gallery</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                        <ul>
-                            <li class="dropdown">
-                                <a href="#"><span>Quick & Easy</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="#">30-Minute Meals</a></li>
-                                    <li><a href="#">5 Ingredients or Less</a></li>
-                                    <li><a href="#">One-Pot Dishes</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Comford Food</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="#">Casseroles & Bakes</a></li>
-                                    <li><a href="#">Soups & Stews</a></li>
-                                    <li><a href="#">Family Favorites</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>World Flavors</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="#">Italian</a></li>
-                                    <li><a href="#">Asian</a></li>
-                                    <li><a href="#">Mexican</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Cakes & Cupcakes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="#">Cakes & Cupcakes </a></li>
-                                    <li><a href="#">Cookies & Bars</a></li>
-                                    <li><a href="#">Pies & Desserts</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Healthy Choices</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="#">Low-Carb</a></li>
-                                    <li><a href="#">Vegan & Vegetarian</a></li>
-                                    <li><a href="#">Gluten-Free</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Weekend Meals</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="#">Roasts & Grills</a></li>
-                                    <li><a href="#">Brunch Favorites</a></li>
-                                    <li><a href="#">Party Plates</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="@Url.Action("Index", "Dashboard")">Dashboard</a></li>
+                    <li><a href="@Url.Action("Create", "Recipes")">Create Recipe</a></li>
+                    <li><a href="@Url.Action("Index", "Recipes")">Recipes</a></li>
                 </ul>
-                <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
-
-            <div class="header-social-links">
-
-                <a asp-area="" asp-controller="Home" asp-action="Login" class="active">Login<br></a>
-                <a asp-area="" asp-controller="Home" asp-action="Register" class="active">Register<br></a>
-
-            </div>
-
         </div>
     </header>
 
-    <main class="main">
-
+    <main role="main">
         <div class="container">
-            <main role="main" class="pb-3">
-                @RenderBody()
-            </main>
+            @RenderBody()
         </div>
-
     </main>
 
     <footer id="footer" class="footer">
-
         <div class="container">
-            <div class="copyright text-center ">
-                <p>© <span>Copyright</span> <strong class="px-1 sitename">TastyNest</strong> <span>All Rights Reserved</span></p>
-            </div>
-            <div class="social-links d-flex justify-content-center">
-                <a href=""><i class="bi bi-twitter-x"></i></a>
-                <a href=""><i class="bi bi-facebook"></i></a>
-                <a href=""><i class="bi bi-instagram"></i></a>
-                <a href=""><i class="bi bi-pinterest"></i></a>
-            </div>
-            <div class="credits">
-                <!-- All the links in the footer should remain intact. -->
-                <!-- You can delete the links only if you've purchased the pro version. -->
-                <!-- Licensing information: https://bootstrapmade.com/license/ -->
-                <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
-                Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
-            </div>
+            <p>© TastyNest All Rights Reserved</p>
         </div>
-
     </footer>
-
-    <!-- Scroll Top -->
-    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-    <!-- Preloader -->
-    <div id="preloader">
-        <div class="line"></div>
-    </div>
-
-    <!-- Vendor JS Files -->
-    <script src="~/lib/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/vendor/php-email-form/validate.js"></script>
-    <script src="~/lib/vendor/aos/aos.js"></script>
-    <script src="~/lib/vendor/glightbox/js/glightbox.min.js"></script>
-    <script src="~/lib/vendor/swiper/swiper-bundle.min.js"></script>
-
-    <!-- Main JS File -->
-    <script src="~/js/main.js"></script>
-
 </body>
 
 </html>

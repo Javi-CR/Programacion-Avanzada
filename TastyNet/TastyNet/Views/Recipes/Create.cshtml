@@ -1,0 +1,33 @@
+﻿@{
+    Layout = "~/Views/Shared/Layout.cshtml";
+}
+
+@model TastyNestFrontend.Models.CreateRecipeViewModel
+
+<h1>Create Recipe</h1>
+<form method="post">
+    <div class="mb-3">
+        <label for="Name" class="form-label">Name</label>
+        <input type="text" id="Name" name="Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label for="Description" class="form-label">Description</label>
+        <textarea id="Description" name="Description" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="CategoryId" class="form-label">Category</label>
+        <select id="CategoryId" name="CategoryId" class="form-select">
+            <!-- Opciones de categoría -->
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Ingredients</label>
+        <!-- Implementar campos dinámicos para ingredientes -->
+    </div>
+    <div class="mb-3">
+        <label>Steps</label>
+        <!-- Implementar campos dinámicos para pasos -->
+    </div>
+    <button type="submit" class="btn btn-success">Create</button>
+</form>
+

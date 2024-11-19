@@ -1,0 +1,25 @@
+﻿@{
+    Layout = "~/Views/Shared/Layout.cshtml";
+}
+
+@model TastyNestFrontend.Models.RecipeDetailsViewModel
+
+<h1>@Model.Name</h1>
+<img src="@Model.Image" alt="@Model.Name" class="img-fluid mb-4" />
+<p>@Model.Description</p>
+
+<h3>Ingredients</h3>
+<ul>
+    @foreach (var ingredient in Model.Ingredients)
+    {
+        <li>@ingredient.Quantity @ingredient.Name</li>
+    }
+</ul>
+
+<h3>Steps</h3>
+<ol>
+    @foreach (var step in Model.Steps)
+    {
+        <li>@step.Description</li>
+    }
+</ol>
