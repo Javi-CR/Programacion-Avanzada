@@ -1502,3 +1502,66 @@ section,
 #createRecipeModal label {
     color: #000; 
 }
+
+/*--------------------------------------------------------------
+# Styles Profile
+--------------------------------------------------------------*/
+.profile img {
+    width: 150px; /* Adjust the size of the image */
+    height: 150px; /* Ensure it is a square */
+    border-radius: 50%; /* Makes the image round */
+    border: 3px solid #ccc; /* Optional: Add a border */
+}
+
+
+
+.form-label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    color: #555;
+}
+
+
+.form-control {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+    .form-control:hover {
+        border-color: #666;
+    }
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: Arial, sans-serif;
+}
+
+
+.input-label {
+    font-size: 14px;
+    color: #333;
+}
+
+
+.file-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+    .file-input:hover {
+        border-color: #666;
+    }
