@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TastyNet.Services;
+using TastyNet.Servicios;
 using TastyNet.Models;
 
 namespace TastyNet.Controllers
@@ -15,12 +15,12 @@ namespace TastyNet.Controllers
         }
 
         [HttpPost]
-        public IActionResult CrearReceta([FromBody] RecetaCreateModel recetaModel)
+        public async Task<IActionResult> CrearReceta([FromBody] RecetaCreateModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Datos inválidos");
 
-            var result = _recetaService.CrearReceta(recetaModel);
+            var result = await _recetaService.CrearRecetaAsync(model); 
             if (!result)
                 return StatusCode(500, "Error al crear la receta");
 
