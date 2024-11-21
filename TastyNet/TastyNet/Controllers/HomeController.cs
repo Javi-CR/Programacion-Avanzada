@@ -29,6 +29,12 @@ namespace Anteproyecto.Controllers
             return View();
         }
 
+        [Route("Favorites")]
+        public IActionResult Favorites()
+        {
+            return View();
+        }
+
     }
 
 }

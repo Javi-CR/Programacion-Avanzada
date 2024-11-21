@@ -1453,3 +1453,52 @@ section,
   /* Add your styles here */
 }
 
+/*--------------------------------------------------------------
+# Styles especificos de cards en pagina Favorites
+--------------------------------------------------------------*/
+
+/* efecto al hacer hover sobre card recetas */
+.recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /
+}
+
+/* divider entre imagen y contenido textual en el card recetas */
+.recipe-card img {
+    border-bottom: 1px solid #ddd; 
+}
+
+/*estilo texto del titulo de las cards recetas */
+.recipe-card h5 {
+    color: #333; 
+}
+
+/* estilo texto de las cards de recetas */
+.recipe-card p, .recipe-card ul li {
+    color: #555; 
+}
+
+/* estilos para las cards de recetas */
+.recipe-card {
+    background-color: #fff;
+    border: 1px solid #ddd; 
+    border-radius: 8px;
+    overflow: hidden; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/*--------------------------------------------------------------
+# Styles especificos del modal Create Recipe
+--------------------------------------------------------------*/
+
+#createRecipeModal .modal-content {
+    color: #000; 
+}
+
+#createRecipeModal .modal-title {
+    color: #000;
+}
+
+#createRecipeModal label {
+    color: #000; 
+}
