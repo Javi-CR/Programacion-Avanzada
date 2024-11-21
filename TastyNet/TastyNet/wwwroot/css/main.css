@@ -1384,6 +1384,68 @@ section,
   background-color: color-mix(in srgb, var(--accent-color) 90%, white 10%);
 }
 
+.recipe-category {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+    margin-top: 40px;
+    padding: 20px;
+}
+
+    .recipe-category .card {
+        width: 300px;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .recipe-category .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .recipe-category .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+.favorite-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+    .favorite-btn:hover {
+        background-color: rgba(255, 100, 100, 0.9);
+    }
+
+    .favorite-btn i {
+        font-size: 20px;
+        color: #dc3545;
+    }
+
+    .favorite-btn.active i {
+        color: #c82333;
+    }
+
+
+
 /*--------------------------------------------------------------
 # Starter Section Section
 --------------------------------------------------------------*/
