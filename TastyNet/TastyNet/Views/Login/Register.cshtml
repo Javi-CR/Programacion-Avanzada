@@ -1,5 +1,7 @@
-﻿@{
-    Layout = "~/Views/Shared/_LayoutDash.cshtml";
+﻿@model Users
+
+@{
+Layout = "~/Views/Shared/_LayoutDash.cshtml";
 }
 
 <div class="text-center">
@@ -22,36 +24,35 @@
         </div>
 
         <!-- Register Form -->
-        <form action="forms/register.php" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="300">
+        <form asp-action="Register" asp-controller="Login" data-aos="fade-up" data-aos-delay="300" class="custom-form">
             <div class="row gy-4 d-flex justify-content-center">
 
                 <div class="col-md-8">
-                    <input type="text" name="fullname" class="form-control" style="max-width: 400px; margin: 0 auto;" placeholder="Full Name" required="">
+                    <input type="text" asp-for="IdentificationNumber" class="form-control custom-input" placeholder="ID number" required="">
                 </div>
 
                 <div class="col-md-8">
-                    <input type="email" class="form-control" name="email" style="max-width: 400px; margin: 0 auto;" placeholder="Email Address" required="">
+                    <input type="text" asp-for="Name" class="form-control custom-input" placeholder="Full Name" required="">
                 </div>
 
                 <div class="col-md-8">
-                    <input type="password" class="form-control" name="password" style="max-width: 400px; margin: 0 auto;" placeholder="Password" required="">
+                    <input type="email" asp-for="Email" class="form-control custom-input" placeholder="Email Address" required="">
                 </div>
 
                 <div class="col-md-8">
-                    <input type="password" class="form-control" name="confirm-password" style="max-width: 400px; margin: 0 auto;" placeholder="Confirm Password" required="">
+                    <input type="password" asp-for="Password" class="form-control custom-input" placeholder="Password" required="">
                 </div>
 
                 <div class="col-md-12 text-center">
-
-                    <button type="submit" style="max-width: 200px; margin: 0 auto;">Sign Up</button>
+                    <button type="submit" class="btn btn-success custom-button">Sign Up</button>
                 </div>
 
             </div>
 
             <div class="row text-center mt-4">
                 <div class="col-md-12">
-
-                    <p>Already have an account? <a asp-area="" asp-controller="Home" asp-action="Login">Login here</a></p>
+                    <p>Already have an account?</p>
+                    <a href="@Url.Action("Login", "Login")" class="custom-link">Login here</a>
                 </div>
             </div>
 

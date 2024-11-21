@@ -1,0 +1,49 @@
+/* General Styling */
+.custom-form {
+    background: #1e1e1e; /* Fondo oscuro */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    color: #fff; /* Texto blanco */
+}
+
+.custom-input {
+    max-width: 400px;
+    margin: 0 auto;
+    background: #333; /* Fondo oscuro */
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    color: #fff;
+}
+
+.custom-input::placeholder {
+    color: #bbb; /* Placeholder más tenue */
+}
+
+.custom-button {
+    max-width: 200px;
+    margin: 0 auto;
+    background-color: #28a745; /* Verde Bootstrap */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+}
+
+.custom-button:hover {
+    background-color: #218838; /* Verde más oscuro al pasar el mouse */
+}
+
+.custom-link {
+    color: #28a745;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.custom-link:hover {
+    text-decoration: underline;
+    color: #218838;
+}
