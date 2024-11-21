@@ -4,9 +4,10 @@ using TastyNet.Models;
 
 namespace TastyNet.Controllers
 {
+    [Route("Recetas")]
+    [ApiController]
     public class RecetasController : Controller
     {
-
         private readonly IRecetaService _recetaService;
 
         public RecetasController(IRecetaService recetaService)
@@ -14,19 +15,24 @@ namespace TastyNet.Controllers
             _recetaService = recetaService;
         }
 
-        [HttpPost]
+        [HttpPost("CrearReceta")]
         public async Task<IActionResult> CrearReceta([FromBody] RecetaCreateModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Datos inválidos");
+                return BadRequest(ModelState);
 
-            var result = await _recetaService.CrearRecetaAsync(model); 
-            if (!result)
-                return StatusCode(500, "Error al crear la receta");
+            try
+            {
+                var result = await _recetaService.CrearRecetaAsync(model);
+                if (!result)
+                    return StatusCode(500, "Error al crear la receta");
 
-            return Ok(new { Message = "Receta creada exitosamente" });
+                return Ok(new { Message = "Receta creada exitosamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno: {ex.Message}");
+            }
         }
-
-
     }
 }
