@@ -16,7 +16,9 @@ namespace TastyNetApi.Repositories
         public bool CrearReceta(RecetaCreateModel receta)
         {
             using var connection = new SqlConnection(_connectionString);
+            connection.Open();
             using var transaction = connection.BeginTransaction();
+
 
             try
             {

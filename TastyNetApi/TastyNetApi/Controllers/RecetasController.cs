@@ -16,7 +16,7 @@ namespace TastyNetApi.Controllers
             _recetaRepository = recetaRepository;
         }
 
-        [HttpPost]
+        [HttpPost("CrearReceta")]
         public IActionResult CrearReceta([FromBody] RecetaCreateModel receta)
         {
             if (!ModelState.IsValid)
@@ -28,5 +28,6 @@ namespace TastyNetApi.Controllers
 
             return Ok(new { Message = "Receta creada exitosamente" });
         }
+
     }
 }
