@@ -300,4 +300,40 @@ GO
 
 
 
+-- CREACION DE PROCEDIMIENTOS ALMACENADOS
+
+CREATE PROCEDURE InsertRecipe
+    @Name NVARCHAR(100),
+    @CategoryId BIGINT,
+    @UserId BIGINT
+AS
+BEGIN
+    INSERT INTO Recipes (Name, CategoryId, UserId)
+    VALUES (@Name, @CategoryId, @UserId);
+
+    SELECT SCOPE_IDENTITY();
+END;
+GO
+
+CREATE PROCEDURE InsertIngredient
+    @RecipeId BIGINT,
+    @Name NVARCHAR(50),
+    @Quantity NVARCHAR(50)
+AS
+BEGIN
+    INSERT INTO Ingredients (RecipeId, Name, Quantity)
+    VALUES (@RecipeId, @Name, @Quantity);
+END;
+GO
+
+CREATE PROCEDURE InsertRecipeStep
+    @RecipeId BIGINT,
+    @StepNumber INT,
+    @Description NVARCHAR(2000)
+AS
+BEGIN
+    INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
+    VALUES (@RecipeId, @StepNumber, @Description);
+END;
+GO
 

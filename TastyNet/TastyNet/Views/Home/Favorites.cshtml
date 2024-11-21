@@ -5,96 +5,83 @@
 @section MainContent {
 
     <div class="container">
-        
         <h2 class="text-center my-5">Your Favorite Recipes</h2>
         <p class="text-center">Here is where your saved favorite recipes will appear.</p>
 
         <!-- Botón Crear Receta -->
         <div class="text-center mb-5">
-            <a href="#" class="btn btn-primary">Crear Receta</a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRecipeModal">Crear Receta</button>
         </div>
 
-        <!-- Cards de recetas alineados horizontalmente -->
-        <div class="row justify-content-center">
-            <!-- Card 1 -->
-            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-                <div class="recipe-card bg-white border rounded shadow">
-                    <!-- Imagen de la receta -->
-                    <img src="img/gallery/recipe1.jpg" class="img-fluid rounded-top" alt="Recipe 1">
-                    <!-- Contenido de la receta -->
-                    <div class="p-3">
-                        <h5 class="fw-bold">Spaghetti Carbonara</h5>
-                        <p class="text-muted mb-1">Categoría: Italian</p>
-                        <p class="mb-1"><strong>Pasos:</strong></p>
-                        <ul class="mb-1">
-                            <li>Hervir los espaguetis.</li>
-                            <li>Preparar la salsa carbonara.</li>
-                            <li>Mezclar y servir.</li>
-                        </ul>
-                        <p class="mb-0"><strong>Ingredientes:</strong></p>
-                        <ul>
-                            <li>Espaguetis (200g)</li>
-                            <li>Huevos (2)</li>
-                            <li>Queso parmesano (50g)</li>
-                        </ul>
+        <!-- Modal para Crear Receta -->
+        <div class="modal fade" id="createRecipeModal" tabindex="-1" aria-labelledby="createRecipeModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createRecipeModalLabel">Crear Receta</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="createRecipeForm">
+                            <div class="mb-3">
+                                <label for="recipeName" class="form-label">Nombre de la Receta</label>
+                                <input type="text" class="form-control" id="recipeName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="categoryId" class="form-label">Categoría</label>
+                                <select class="form-select" id="categoryId" required>
+                                    <option value="" selected>Seleccione una categoría</option>
+                                    <!-- Opciones de categorías -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ingredients" class="form-label">Ingredientes</label>
+                                <textarea class="form-control" id="ingredients" rows="3" placeholder="Ejemplo: Harina, 2 tazas; Huevos, 3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="steps" class="form-label">Pasos</label>
+                                <textarea class="form-control" id="steps" rows="3" placeholder="Ejemplo: Mezclar los ingredientes; Hornear"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="createRecipeButton">Crear</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Card 2 -->
-            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-                <div class="recipe-card bg-white border rounded shadow">
-                    <!-- Imagen de la receta -->
-                    <img src="img/gallery/recipe2.jpg" class="img-fluid rounded-top" alt="Recipe 2">
-                    <!-- Contenido de la receta -->
-                    <div class="p-3">
-                        <h5 class="fw-bold">Pancakes Clásicos</h5>
-                        <p class="text-muted mb-1">Categoría: Brunch Favorites</p>
-                        <p class="mb-1"><strong>Pasos:</strong></p>
-                        <ul class="mb-1">
-                            <li>Mezclar la harina y los huevos.</li>
-                            <li>Cocinar en una sartén caliente.</li>
-                            <li>Servir con miel o fruta.</li>
-                        </ul>
-                        <p class="mb-0"><strong>Ingredientes:</strong></p>
-                        <ul>
-                            <li>Harina (2 tazas)</li>
-                            <li>Huevos (2)</li>
-                            <li>Leche (1 taza)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-                <div class="recipe-card bg-white border rounded shadow">
-                    <!-- Imagen de la receta -->
-                    <img src="img/gallery/recipe3.jpg" class="img-fluid rounded-top" alt="Recipe 3">
-                    <!-- Contenido de la receta -->
-                    <div class="p-3">
-                        <h5 class="fw-bold">Tacos al Pastor</h5>
-                        <p class="text-muted mb-1">Categoría: Mexican</p>
-                        <p class="mb-1"><strong>Pasos:</strong></p>
-                        <ul class="mb-1">
-                            <li>Marinar la carne de cerdo.</li>
-                            <li>Cocinar en una parrilla.</li>
-                            <li>Servir con tortillas y piña.</li>
-                        </ul>
-                        <p class="mb-0"><strong>Ingredientes:</strong></p>
-                        <ul>
-                            <li>Cerdo (500g)</li>
-                            <li>Tortillas (6)</li>
-                            <li>Piña en trozos (1/2 taza)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-
+        <!-- Contenedor para las recetas -->
+        <div class="row justify-content-center" id="recipeCards"></div>
     </div>
-
-
-
-
 }
+
+<!-- Script para manejar la creación de recetas -->
+<script>
+    document.getElementById('createRecipeButton').addEventListener('click', function () {
+        const name = document.getElementById('recipeName').value;
+        const categoryId = document.getElementById('categoryId').value;
+        const ingredients = document.getElementById('ingredients').value
+            .split(';')
+            .map(item => {
+                const [name, quantity] = item.split(',');
+                return { Name: name.trim(), Quantity: quantity.trim() };
+            });
+        const steps = document.getElementById('steps').value
+            .split(';')
+            .map((desc, index) => ({ StepNumber: index + 1, Description: desc.trim() }));
+
+        fetch('/Recetas/CrearReceta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Name: name, CategoryId: categoryId, Ingredients: ingredients, Steps: steps })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.Message);
+            location.reload();
+        })
+        .catch(err => alert('Error: ' + err));
+    });
+</script>
