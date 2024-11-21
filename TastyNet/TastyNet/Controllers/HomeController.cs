@@ -1,8 +1,8 @@
-using Anteproyecto.Models;
+using TastyNet.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace Anteproyecto.Controllers
+namespace TastyNet.Controllers
 {
     public class HomeController : Controller
     {

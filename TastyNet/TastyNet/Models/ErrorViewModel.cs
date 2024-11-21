@@ -1,4 +1,4 @@
-namespace Anteproyecto.Models
+namespace TastyNet.Models
 {
     public class ErrorViewModel
     {
