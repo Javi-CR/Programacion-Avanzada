@@ -18,28 +18,45 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="createRecipeModalLabel">Crear Receta</h5>
+                        <h5 class="modal-title" id="createRecipeModalLabel" style="color: #000;">Crear Receta</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form id="createRecipeForm">
                             <div class="mb-3">
-                                <label for="recipeName" class="form-label">Nombre de la Receta</label>
+                                <label for="recipeName" class="form-label" style="color: #000;">Nombre de la Receta</label>
                                 <input type="text" class="form-control" id="recipeName" required>
                             </div>
                             <div class="mb-3">
-                                <label for="categoryId" class="form-label">Categoría</label>
+                                <label for="categoryId" class="form-label" style="color: #000;">Categoría</label>
                                 <select class="form-select" id="categoryId" required>
-                                    <option value="" selected>Seleccione una categoría</option>
-                                    <!-- Opciones de categorías -->
+                                    <option value="" selected disabled>Seleccione una categoría</option>
+                                    <option value="1">30-Minute Meals</option>
+                                    <option value="2">5 Ingredients or Less</option>
+                                    <option value="3">One-Pot Dishes</option>
+                                    <option value="4">Casseroles & Bakes</option>
+                                    <option value="5">Soups & Stews</option>
+                                    <option value="6">Family Favorites</option>
+                                    <option value="7">Italian</option>
+                                    <option value="8">Asian</option>
+                                    <option value="9">Mexican</option>
+                                    <option value="10">Cakes & Cupcakes</option>
+                                    <option value="11">Cookies & Bars</option>
+                                    <option value="12">Pies & Desserts</option>
+                                    <option value="13">Low-Carb</option>
+                                    <option value="14">Vegan & Vegetarian</option>
+                                    <option value="15">Gluten-Free</option>
+                                    <option value="16">Roasts & Grills</option>
+                                    <option value="17">Brunch Favorites</option>
+                                    <option value="18">Party Meals</option>
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="ingredients" class="form-label">Ingredientes</label>
+                                <label for="ingredients" class="form-label" style="color: #000;">Ingredientes</label>
                                 <textarea class="form-control" id="ingredients" rows="3" placeholder="Ejemplo: Harina, 2 tazas; Huevos, 3"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="steps" class="form-label">Pasos</label>
+                                <label for="steps" class="form-label" style="color: #000;">Pasos</label>
                                 <textarea class="form-control" id="steps" rows="3" placeholder="Ejemplo: Mezclar los ingredientes; Hornear"></textarea>
                             </div>
                         </form>

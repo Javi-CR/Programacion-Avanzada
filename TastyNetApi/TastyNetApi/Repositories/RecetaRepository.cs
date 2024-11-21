@@ -8,9 +8,9 @@ namespace TastyNetApi.Repositories
     {
         private readonly string _connectionString;
 
-        public RecetaRepository(IConfiguration configuration)
+        public RecetaRepository(string connectionString)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _connectionString = connectionString;
         }
 
         public bool CrearReceta(RecetaCreateModel receta)

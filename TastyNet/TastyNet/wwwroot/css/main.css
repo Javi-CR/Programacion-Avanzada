@@ -1424,3 +1424,19 @@ section,
     overflow: hidden; 
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+/*--------------------------------------------------------------
+# Styles especificos del modal Create Recipe
+--------------------------------------------------------------*/
+
+#createRecipeModal .modal-content {
+    color: #000; 
+}
+
+#createRecipeModal .modal-title {
+    color: #000;
+}
+
+#createRecipeModal label {
+    color: #000; 
+}
