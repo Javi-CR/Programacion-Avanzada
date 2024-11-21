@@ -1,4 +1,5 @@
 using TastyNet.Models;
+using TastyNet.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -12,27 +13,27 @@ private readonly IHttpClientFactory _http;
 private readonly IConfiguration _conf;
 private readonly IHashService _comunes;
 
-public LoginController(IHttpClientFactory http, IConfiguration conf)
+public LoginController(IHttpClientFactory http, IConfiguration conf, IHashService comunes)
 {
     _http = http;
     _conf = conf;
-   // _comunes = comunes;
+    _comunes = comunes;
 }
 
 [HttpGet]
-public IActionResult CrearCuenta()
+public IActionResult Register()
 {
     return View();
 }
 
 [HttpPost]
-public IActionResult CrearCuenta(Users model)
+public IActionResult Register(Users model)
 {
     using (var client = _http.CreateClient())
     {
-        string url = _conf.GetSection("Variables:RutaApi").Value + "Login/CrearCuenta";
+        string url = _conf.GetSection("Variables:RutaApi").Value + "Login/Register";
 
-        model.Contrasenna = _comunes.Encrypt(model.Contrasenna);
+        model.Password = _comunes.Encrypt(model.Password);
         JsonContent datos = JsonContent.Create(model);
 
         var response = client.PostAsync(url, datos).Result;
@@ -40,7 +41,7 @@ public IActionResult CrearCuenta(Users model)
 
         if (result != null && result.Codigo == 0)
         {
-            return RedirectToAction("IniciarSesion", "Login");
+            return RedirectToAction("Login", "Login");
         }
         else
         {
@@ -50,20 +51,20 @@ public IActionResult CrearCuenta(Users model)
     }
 }
 
-[HttpGet]
-        public IActionResult IniciarSesion()
+        [HttpGet]
+        public IActionResult Login()
         {
             return View();
         }
 
         [HttpPost]
-        public IActionResult IniciarSesion(Users model)
+        public IActionResult Login(Users model)
         {
             using (var client = _http.CreateClient())
             {
-                string url = _conf.GetSection("Variables:RutaApi").Value + "Login/IniciarSesion";
+                string url = _conf.GetSection("Variables:RutaApi").Value + "Login/Login";
 
-                model.Contrasenna = _comunes.Encrypt(model.Contrasenna);
+                model.Password = _comunes.Encrypt(model.Password);
                 JsonContent datos = JsonContent.Create(model);
 
                 var response = client.PostAsync(url, datos).Result;
@@ -73,12 +74,12 @@ public IActionResult CrearCuenta(Users model)
                 {
                     var datosContenido = JsonSerializer.Deserialize<Users>((JsonElement)result.Contenido!);
 
-                    HttpContext.Session.SetString("ConsecutivoUsuario", datosContenido!.Consecutivo.ToString());
-                    HttpContext.Session.SetString("NombreUsuario", datosContenido!.Nombre);
-                    HttpContext.Session.SetString("TokenUsuario", datosContenido!.Token);
-                    HttpContext.Session.SetString("RolUsuario", datosContenido!.ConsecutivoRol.ToString());
+                   // HttpContext.Session.SetString("ConsecutivoUsuario", datosContenido!.Consecutivo.ToString());
+                   // HttpContext.Session.SetString("NombreUsuario", datosContenido!.Nombre);
+                   // HttpContext.Session.SetString("TokenUsuario", datosContenido!.Token);
+                   // HttpContext.Session.SetString("RolUsuario", datosContenido!.ConsecutivoRol.ToString());
 
-                    return RedirectToAction("Inicio", "Home");
+                    return RedirectToAction("Index", "Home");
                 }
                 else
                 {

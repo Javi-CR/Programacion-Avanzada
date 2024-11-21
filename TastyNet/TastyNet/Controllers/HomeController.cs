@@ -11,23 +11,23 @@ namespace TastyNet.Controllers
         {
             return View();
         }
-        [Route("Login")]
-        public IActionResult Login()
-        {
-            return View();
-        }
+        // [Route("Login")]
+        // public IActionResult Login()
+        // {
+        //     return View();
+        // }
 
-        [Route("Register")]
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        [Route("RecoverAccount")]
-        public IActionResult RecoverAccount()
-        {
-            return View();
-        }
+        // [Route("Register")]
+        // public IActionResult Register()
+        // {
+        //     return View();
+        // }
+        //
+        // [Route("RecoverAccount")]
+        // public IActionResult RecoverAccount()
+        // {
+        //     return View();
+        // }
 
     }
 

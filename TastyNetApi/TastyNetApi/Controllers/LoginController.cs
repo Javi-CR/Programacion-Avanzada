@@ -31,14 +31,14 @@ namespace TastyNetApi.Controllers
         }
 
         [HttpPost]
-        [Route("CrearCuenta")]
-        public IActionResult CrearCuenta(Users model)
+        [Route("Register")]
+        public IActionResult Register(Users model)
         {
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new Respuesta();
-                var result = context.Execute("CrearCuenta",
-                    new { model.Identificacion, model.Nombre, model.Correo, model.Contrasenna });
+                var result = context.Execute("CreateUser",
+                    new { model.IdentificationNumber, model.Name, model.Email, model.Password });
 
                 if (result > 0)
                 {
@@ -55,26 +55,25 @@ namespace TastyNetApi.Controllers
         }
 
         [HttpPost]
-        [Route("IniciarSesion")]
-        public IActionResult IniciarSesion(Users model)
+        [Route("Login")]
+        public IActionResult Login(Users model)
         {
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new Respuesta();
                 var result =
-                    context.QueryFirstOrDefault<Users>("IniciarSesion", new { model.Correo, model.Contrasenna });
+                    context.QueryFirstOrDefault<Users>("Login", new { model.Email, model.Password });
 
                 if (result != null)
                 {
-                    if (result.UsaClaveTemp && result.Vigencia < DateTime.Now)
+                    if (result.UsaTempPassword && result.Validity < DateTime.Now)
                     {
                         respuesta.Codigo = -1;
                         respuesta.Mensaje = "Su información de acceso temporal ha expirado";
                     }
                     else
                     {
-                        //result.Token = GenerarToken(result);
-
+                        
                         respuesta.Codigo = 0;
                         respuesta.Contenido = result;
                     }
@@ -88,5 +87,60 @@ namespace TastyNetApi.Controllers
                 return Ok(respuesta);
             }
         }
+
+        private string Encrypt(string texto)
+        {
+            byte[] iv = new byte[16];
+            byte[] array;
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(_conf.GetSection("Variables:Llave").Value!);
+                aes.IV = iv;
+
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    using (CryptoStream cryptoStream =
+                           new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
+                        {
+                            streamWriter.Write(texto);
+                        }
+
+                        array = memoryStream.ToArray();
+                    }
+                }
+            }
+
+            return Convert.ToBase64String(array);
+        }
+
+        private string Decrypt(string texto)
+        {
+            byte[] iv = new byte[16];
+            byte[] buffer = Convert.FromBase64String(texto);
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(_conf.GetSection("Variables:Llave").Value!);
+                aes.IV = iv;
+                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                using (MemoryStream memoryStream = new MemoryStream(buffer))
+                {
+                    using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader streamReader = new StreamReader(cryptoStream))
+                        {
+                            return streamReader.ReadToEnd();
+                        }
+                    }
+                }
+
+            }
+        }
     }
-}
+}    
