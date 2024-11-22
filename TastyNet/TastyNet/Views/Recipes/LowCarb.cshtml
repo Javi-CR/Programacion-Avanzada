@@ -1,54 +1,55 @@
 ﻿@{
     ViewData["Title"] = "Low-Carb Recipes";
 }
-
-<section class="recipe-category">
-    <div class="container">
-        <h2 class="text-center">Low-Carb Recipes</h2>
-        <p class="text-center">Delicious low-carb recipes to enjoy without guilt!</p>
-        <div class="row justify-content-center">
-            <!-- Tarjeta 1 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/lowcarb1.jpg" alt="Zucchini Noodles" class="card-img-top">
-                    <!-- Botón de favorito -->
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Zucchini Noodles</h5>
-                        <p class="card-text">A healthy alternative to pasta, perfect with your favorite sauce.</p>
+@section MainContent {
+    <section class="recipe-category">
+        <div class="container">
+            <h2 class="text-center">Low-Carb Recipes</h2>
+            <p class="text-center">Delicious low-carb recipes to enjoy without guilt!</p>
+            <div class="row justify-content-center">
+                <!-- Tarjeta 1 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/lowcarb1.jpg" alt="Zucchini Noodles" class="card-img-top">
+                        <!-- Botón de favorito -->
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Zucchini Noodles</h5>
+                            <p class="card-text">A healthy alternative to pasta, perfect with your favorite sauce.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tarjeta 2 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/lowcarb2.jpg" alt="Cauliflower Rice" class="card-img-top">
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Cauliflower Rice</h5>
-                        <p class="card-text">Light, fluffy, and full of flavor – the perfect low-carb side dish.</p>
+                <!-- Tarjeta 2 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/lowcarb2.jpg" alt="Cauliflower Rice" class="card-img-top">
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Cauliflower Rice</h5>
+                            <p class="card-text">Light, fluffy, and full of flavor – the perfect low-carb side dish.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tarjeta 3 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/lowcarb3.jpg" alt="Grilled Chicken Salad" class="card-img-top">
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Grilled Chicken Salad</h5>
-                        <p class="card-text">A fresh and hearty salad packed with protein and low on carbs.</p>
+                <!-- Tarjeta 3 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/lowcarb3.jpg" alt="Grilled Chicken Salad" class="card-img-top">
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Grilled Chicken Salad</h5>
+                            <p class="card-text">A fresh and hearty salad packed with protein and low on carbs.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+}

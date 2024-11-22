@@ -34,7 +34,6 @@ namespace Anteproyecto.Controllers
         {
             return View();
         }
-
     }
 
 }
