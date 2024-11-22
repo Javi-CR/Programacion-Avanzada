@@ -7,19 +7,23 @@ GO
 
 -- Roles
 CREATE TABLE Roles (
-    Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    Name NVARCHAR(50) NOT NULL UNIQUE
+    Id TINYINT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    RolName NVARCHAR(50) NOT NULL UNIQUE
 );
 GO
 
 -- Usuarios
 CREATE TABLE Users (
     Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    UserName NVARCHAR(50) NOT NULL,
+    IdentificationNumber NVARCHAR(20) NOT NULL, 
+    Name NVARCHAR(255) NOT NULL,
     Email NVARCHAR(100) NOT NULL UNIQUE,
-    PasswordHash NVARCHAR(MAX) NOT NULL,
-    ProfileImage NVARCHAR(255),
-    RoleId BIGINT NOT NULL,
+    Password NVARCHAR(MAX) NOT NULL,
+    PlaintextPassword [varchar](255) NOT NULL,
+    Active BIT NOT NULL, 
+    RoleId TINYINT NOT NULL,
+    UseTempPassword BIT NOT NULL, 
+    Validity DATETIME NOT NULL, 
     CreatedUser DATETIME2 NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (RoleId) REFERENCES Roles(Id) ON DELETE CASCADE
 );
@@ -94,8 +98,10 @@ GO
 -- INSERTs para las tablas:
 
 -- Inserciones en la tabla Roles
-INSERT INTO Roles (Name) VALUES ('admin');
-INSERT INTO Roles (Name) VALUES ('cliente');
+INSERT INTO Roles (RolName) VALUES (N'Administradores');
+INSERT INTO Roles (RolName) VALUES (N'Clientes');
+
+SELECT * FROM dbo.Roles 
 GO
 
 -- Inserciones en la tabla Users
@@ -106,7 +112,8 @@ INSERT INTO Users (UserName, Email, PasswordHash, ProfileImage, RoleId)
 VALUES ('ClientUser', 'client@example.com', 'hashedpassword456', 'client_profile.jpg', 2);
 GO
 
--- Inserci n en la tabla Categories
+-- Inserción en la tabla Categories
+
 INSERT INTO Categories (Name) VALUES ('30-Minute Meals');
 INSERT INTO Categories (Name) VALUES ('5 Ingredients or Less');
 INSERT INTO Categories (Name) VALUES ('One-Pot Dishes');
@@ -139,7 +146,7 @@ VALUES (1, 4, 'Cheesy Potato Bake', 'cheesy_potato_bake.jpg');
 INSERT INTO Recipes (UserId, CategoryId, Name, Image)
 VALUES (1, 5, 'Hearty Chicken Soup', 'hearty_chicken_soup.jpg');
 INSERT INTO Recipes (UserId, CategoryId, Name, Image)
-VALUES (1, 6, 'Grandma s Meatloaf', 'grandmas_meatloaf.jpg');
+VALUES (1, 6, 'Grandma's Meatloaf', 'grandmas_meatloaf.jpg');
 INSERT INTO Recipes (UserId, CategoryId, Name, Image)
 VALUES (1, 7, 'Classic Lasagna', 'classic_lasagna.jpg');
 INSERT INTO Recipes (UserId, CategoryId, Name, Image)
@@ -228,7 +235,7 @@ INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
 VALUES (4, 2, 'Bake in the oven until golden and bubbly.');
 
 INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
-VALUES (5, 1, 'Saut  onions, carrots, and celery in a pot.');
+VALUES (5, 1, 'Saut onions, carrots, and celery in a pot.');
 INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
 VALUES (5, 2, 'Add chicken and broth, simmer until tender.');
 
@@ -299,43 +306,55 @@ VALUES (18, 2, 'Assemble sliders with buns and toppings.');
 GO
 
 
-
--- CREACION DE PROCEDIMIENTOS ALMACENADOS
-
-CREATE PROCEDURE InsertRecipe
-    @Name NVARCHAR(100),
-    @CategoryId BIGINT,
-    @UserId BIGINT
+CREATE PROCEDURE [dbo].[CreateUser]
+	@IdentificationNumber varchar(20),
+	@Name			varchar(255),
+	@Email			varchar(80),
+	@Password	varchar(255)
 AS
 BEGIN
-    INSERT INTO Recipes (Name, CategoryId, UserId)
-    VALUES (@Name, @CategoryId, @UserId);
 
-    SELECT SCOPE_IDENTITY();
-END;
-GO
+	DECLARE @EstadoActivo BIT = 1,
+			@RolUsuario INT,
+			@UsaClaveTemp BIT = 0
 
-CREATE PROCEDURE InsertIngredient
-    @RecipeId BIGINT,
-    @Name NVARCHAR(50),
-    @Quantity NVARCHAR(50)
+	SELECT	@RolUsuario = Id
+	FROM	dbo.Roles
+	WHERE	RolName = 'Clientes'
+
+	IF NOT EXISTS(SELECT 1 FROM dbo.Users 
+			      WHERE IdentificationNumber = @IdentificationNumber
+					OR	Email = @Email)
+	BEGIN
+		INSERT INTO dbo.Users (IdentificationNumber,Name,Email,Password,Active,RoleId,UseTempPassword,Validity)
+		VALUES (@IdentificationNumber,@Name,@Email,@Password,@EstadoActivo,@RolUsuario,@UsaClaveTemp,GETDATE())
+	END
+
+END
+
+CREATE PROCEDURE [dbo].[Login]
+	@Email			varchar(80),
+	@Password	    varchar(255)
 AS
 BEGIN
-    INSERT INTO Ingredients (RecipeId, Name, Quantity)
-    VALUES (@RecipeId, @Name, @Quantity);
-END;
-GO
+	
+	SELECT	U.Id,
+			IdentificationNumber,
+			Name,
+			Email,
+			Active,
+			RoleId,
+			R.RolName,
+			UseTempPassword,
+			Validity 
+	  FROM	dbo.Users U
+	  INNER JOIN dbo.Roles R ON U.RoleId = R.Id 
+	  WHERE	Email = @Email
+		AND Password = @Password
+		AND Active = 1
 
-CREATE PROCEDURE InsertRecipeStep
-    @RecipeId BIGINT,
-    @StepNumber INT,
-    @Description NVARCHAR(2000)
-AS
-BEGIN
-    INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
-    VALUES (@RecipeId, @StepNumber, @Description);
-END;
-GO
+END
+
 
 CREATE PROCEDURE GetCategoriesWithSubcategories
 AS
