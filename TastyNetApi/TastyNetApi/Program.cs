@@ -18,6 +18,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IRecetaRepository>(provider => new RecetaRepository(connectionString));
 
 
+builder.Services.AddScoped<CategoryRepository>(provider => new CategoryRepository(connectionString));
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

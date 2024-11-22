@@ -1,54 +1,55 @@
 ﻿@{
     ViewData["Title"] = "Italian Recipes";
 }
-
-<section class="recipe-category">
-    <div class="container">
-        <h2 class="text-center">Italian Recipes</h2>
-        <p class="text-center">Indulge in the rich and traditional flavors of Italian cuisine.</p>
-        <div class="row justify-content-center">
-            <!-- Tarjeta 1 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/italian1.jpg" alt="Margherita Pizza" class="card-img-top">
-                    <!-- Botón de favorito -->
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Margherita Pizza</h5>
-                        <p class="card-text">Classic Italian pizza with tomato sauce, mozzarella, and fresh basil.</p>
+@section MainContent {
+    <section class="recipe-category">
+        <div class="container">
+            <h2 class="text-center">Italian Recipes</h2>
+            <p class="text-center">Indulge in the rich and traditional flavors of Italian cuisine.</p>
+            <div class="row justify-content-center">
+                <!-- Tarjeta 1 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/italian1.jpg" alt="Margherita Pizza" class="card-img-top">
+                        <!-- Botón de favorito -->
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Margherita Pizza</h5>
+                            <p class="card-text">Classic Italian pizza with tomato sauce, mozzarella, and fresh basil.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tarjeta 2 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/italian2.jpg" alt="Spaghetti Carbonara" class="card-img-top">
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Spaghetti Carbonara</h5>
-                        <p class="card-text">Creamy pasta with pancetta, eggs, and Parmesan cheese.</p>
+                <!-- Tarjeta 2 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/italian2.jpg" alt="Spaghetti Carbonara" class="card-img-top">
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Spaghetti Carbonara</h5>
+                            <p class="card-text">Creamy pasta with pancetta, eggs, and Parmesan cheese.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tarjeta 3 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/italian3.jpg" alt="Tiramisu" class="card-img-top">
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Tiramisu</h5>
-                        <p class="card-text">A classic dessert made with layers of coffee-soaked ladyfingers and mascarpone cream.</p>
+                <!-- Tarjeta 3 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/italian3.jpg" alt="Tiramisu" class="card-img-top">
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Tiramisu</h5>
+                            <p class="card-text">A classic dessert made with layers of coffee-soaked ladyfingers and mascarpone cream.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+}

@@ -1,103 +1,55 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 
-namespace YourNamespace.Controllers
+namespace TastyNet.Controllers
 {
     public class RecipesController : Controller
     {
+
         // Quick & Easy
-        public IActionResult ThirtyMinuteMeals()
-        {
-            return View();
-        }
+        public IActionResult ThirtyMinuteMeals() => View();
 
-        public IActionResult FiveIngredientsOrLess()
-        {
-            return View();
-        }
+        public IActionResult FiveIngredientsOrLess() => View();
 
-        public IActionResult OnePotDishes()
-        {
-            return View();
-        }
+        public IActionResult OnePotDishes() => View();
 
         // Comfort Food
-        public IActionResult CasserolesAndBakes()
-        {
-            return View();
-        }
+        public IActionResult CasserolesAndBakes() => View();
 
-        public IActionResult SoupsAndStews()
-        {
-            return View();
-        }
+        public IActionResult SoupsAndStews() => View();
 
-        public IActionResult FamilyFavorites()
-        {
-            return View();
-        }
+        public IActionResult FamilyFavorites() => View();
 
         // World Flavors
-        public IActionResult Italian()
-        {
-            return View();
-        }
+        public IActionResult Italian() => View();
 
-        public IActionResult Asian()
-        {
-            return View();
-        }
+        public IActionResult Asian() => View();
 
-        public IActionResult Mexican()
-        {
-            return View();
-        }
+        public IActionResult Mexican() => View();
 
         // Cakes & Cupcakes
-        public IActionResult CakesAndCupcakes()
-        {
-            return View();
-        }
+        public IActionResult CakesAndCupcakes() => View();
 
-        public IActionResult CookiesAndBars()
-        {
-            return View();
-        }
+        public IActionResult CookiesAndBars() => View();
 
-        public IActionResult PiesAndDesserts()
-        {
-            return View();
-        }
+        public IActionResult PiesAndDesserts() => View();
 
         // Healthy Choices
-        public IActionResult LowCarb()
-        {
-            return View();
-        }
+        public IActionResult LowCarb() => View();
 
-        public IActionResult VeganAndVegetarian()
-        {
-            return View();
-        }
+        public IActionResult VeganAndVegetarian() => View();
 
-        public IActionResult GlutenFree()
-        {
-            return View();
-        }
+        public IActionResult GlutenFree() => View();
 
         // Weekend Meals
-        public IActionResult RoastsAndGrills()
-        {
-            return View();
-        }
+        public IActionResult RoastsAndGrills() => View();
 
-        public IActionResult BrunchFavorites()
-        {
-            return View();
-        }
+        public IActionResult BrunchFavorites() => View();
 
-        public IActionResult PartyPlates()
-        {
-            return View();
-        }
+        public IActionResult PartyPlates() => View();
+
     }
+   
 }

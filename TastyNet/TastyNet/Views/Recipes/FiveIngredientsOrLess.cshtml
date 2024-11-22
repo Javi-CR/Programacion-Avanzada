@@ -1,54 +1,55 @@
 ﻿@{
     ViewData["Title"] = "Five Ingredients or Less";
 }
-
-<section class="recipe-category">
-    <div class="container">
-        <h2 class="text-center">Five Ingredients or Less</h2>
-        <p class="text-center">Simple yet delicious recipes made with just five ingredients or less!</p>
-        <div class="row justify-content-center">
-            <!-- Tarjeta 1 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/5ingredients1.jpg" alt="Caprese Salad" class="card-img-top">
-                    <!-- Botón de favorito -->
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Caprese Salad</h5>
-                        <p class="card-text">Tomatoes, fresh mozzarella, basil, olive oil, and balsamic glaze.</p>
+@section MainContent {
+    <section class="recipe-category">
+        <div class="container">
+            <h2 class="text-center">Five Ingredients or Less</h2>
+            <p class="text-center">Simple yet delicious recipes made with just five ingredients or less!</p>
+            <div class="row justify-content-center">
+                <!-- Tarjeta 1 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/5ingredients1.jpg" alt="Caprese Salad" class="card-img-top">
+                        <!-- Botón de favorito -->
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Caprese Salad</h5>
+                            <p class="card-text">Tomatoes, fresh mozzarella, basil, olive oil, and balsamic glaze.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tarjeta 2 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/5ingredients2.jpg" alt="Avocado Toast" class="card-img-top">
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Avocado Toast</h5>
-                        <p class="card-text">Toast, mashed avocado, salt, pepper, and lemon juice.</p>
+                <!-- Tarjeta 2 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/5ingredients2.jpg" alt="Avocado Toast" class="card-img-top">
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Avocado Toast</h5>
+                            <p class="card-text">Toast, mashed avocado, salt, pepper, and lemon juice.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tarjeta 3 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/5ingredients3.jpg" alt="Banana Smoothie" class="card-img-top">
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Banana Smoothie</h5>
-                        <p class="card-text">Banana, milk, honey, ice, and vanilla extract.</p>
+                <!-- Tarjeta 3 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/5ingredients3.jpg" alt="Banana Smoothie" class="card-img-top">
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Banana Smoothie</h5>
+                            <p class="card-text">Banana, milk, honey, ice, and vanilla extract.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+}

@@ -29,9 +29,10 @@ CREATE TABLE Users (
 );
 GO
 
--- Categor�as
+-- Categorias
 CREATE TABLE Categories (
     Id BIGINT PRIMARY KEY IDENTITY(1,1),
+    ParentId BIGINT NULL,
     Name NVARCHAR(50) NOT NULL UNIQUE
 );
 GO
@@ -111,8 +112,8 @@ INSERT INTO Users (UserName, Email, PasswordHash, ProfileImage, RoleId)
 VALUES ('ClientUser', 'client@example.com', 'hashedpassword456', 'client_profile.jpg', 2);
 GO
 
+-- Inserción en la tabla Categories
 
--- Inserci�n en la tabla Categories
 INSERT INTO Categories (Name) VALUES ('30-Minute Meals');
 INSERT INTO Categories (Name) VALUES ('5 Ingredients or Less');
 INSERT INTO Categories (Name) VALUES ('One-Pot Dishes');
@@ -145,7 +146,7 @@ VALUES (1, 4, 'Cheesy Potato Bake', 'cheesy_potato_bake.jpg');
 INSERT INTO Recipes (UserId, CategoryId, Name, Image)
 VALUES (1, 5, 'Hearty Chicken Soup', 'hearty_chicken_soup.jpg');
 INSERT INTO Recipes (UserId, CategoryId, Name, Image)
-VALUES (1, 6, 'Grandma�s Meatloaf', 'grandmas_meatloaf.jpg');
+VALUES (1, 6, 'Grandma's Meatloaf', 'grandmas_meatloaf.jpg');
 INSERT INTO Recipes (UserId, CategoryId, Name, Image)
 VALUES (1, 7, 'Classic Lasagna', 'classic_lasagna.jpg');
 INSERT INTO Recipes (UserId, CategoryId, Name, Image)
@@ -234,7 +235,7 @@ INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
 VALUES (4, 2, 'Bake in the oven until golden and bubbly.');
 
 INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
-VALUES (5, 1, 'Saut� onions, carrots, and celery in a pot.');
+VALUES (5, 1, 'Saut onions, carrots, and celery in a pot.');
 INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
 VALUES (5, 2, 'Add chicken and broth, simmer until tender.');
 
@@ -354,4 +355,18 @@ BEGIN
 
 END
 
+
+CREATE PROCEDURE GetCategoriesWithSubcategories
+AS
+BEGIN
+    SELECT 
+        C.Id AS CategoryId,
+        C.Name AS CategoryName,
+        SC.Id AS SubcategoryId,
+        SC.Name AS SubcategoryName
+    FROM Categories C
+    LEFT JOIN Categories SC ON SC.ParentId = C.Id
+    WHERE C.ParentId IS NULL;
+END;
+GO
 

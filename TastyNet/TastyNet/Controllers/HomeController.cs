@@ -34,7 +34,6 @@ namespace TastyNet.Controllers
         {
             return View();
         }
-
     }
 
 }

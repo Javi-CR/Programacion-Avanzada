@@ -9,6 +9,8 @@ builder.Services.AddSession();
 
 builder.Services.AddScoped<IHashService, HashService>();
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,54 +1,55 @@
 ﻿@{
     ViewData["Title"] = "Vegan & Vegetarian Recipes";
 }
-
-<section class="recipe-category">
-    <div class="container">
-        <h2 class="text-center">Vegan & Vegetarian Recipes</h2>
-        <p class="text-center">Delicious and healthy recipes for a plant-based lifestyle.</p>
-        <div class="row justify-content-center">
-            <!-- Tarjeta 1 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/vegan1.jpg" alt="Vegan Buddha Bowl" class="card-img-top">
-                    <!-- Botón de favorito -->
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Vegan Buddha Bowl</h5>
-                        <p class="card-text">A vibrant mix of vegetables, grains, and tahini dressing.</p>
+@section MainContent {
+    <section class="recipe-category">
+        <div class="container">
+            <h2 class="text-center">Vegan & Vegetarian Recipes</h2>
+            <p class="text-center">Delicious and healthy recipes for a plant-based lifestyle.</p>
+            <div class="row justify-content-center">
+                <!-- Tarjeta 1 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/vegan1.jpg" alt="Vegan Buddha Bowl" class="card-img-top">
+                        <!-- Botón de favorito -->
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Vegan Buddha Bowl</h5>
+                            <p class="card-text">A vibrant mix of vegetables, grains, and tahini dressing.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tarjeta 2 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/vegan2.jpg" alt="Vegetarian Stir-Fry" class="card-img-top">
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Vegetarian Stir-Fry</h5>
-                        <p class="card-text">A quick and colorful stir-fry with tofu and fresh veggies.</p>
+                <!-- Tarjeta 2 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/vegan2.jpg" alt="Vegetarian Stir-Fry" class="card-img-top">
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Vegetarian Stir-Fry</h5>
+                            <p class="card-text">A quick and colorful stir-fry with tofu and fresh veggies.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tarjeta 3 -->
-            <div class="col-md-4">
-                <div class="card position-relative">
-                    <img src="~/img/recipes/vegan3.jpg" alt="Quinoa Salad" class="card-img-top">
-                    <button class="favorite-btn">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                    <div class="card-body">
-                        <h5 class="card-title">Quinoa Salad</h5>
-                        <p class="card-text">A refreshing salad with quinoa, cucumbers, and lemon dressing.</p>
+                <!-- Tarjeta 3 -->
+                <div class="col-md-4">
+                    <div class="card position-relative">
+                        <img src="~/img/recipes/vegan3.jpg" alt="Quinoa Salad" class="card-img-top">
+                        <button class="favorite-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title">Quinoa Salad</h5>
+                            <p class="card-text">A refreshing salad with quinoa, cucumbers, and lemon dressing.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+}
