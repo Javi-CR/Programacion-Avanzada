@@ -61,6 +61,25 @@ namespace TastyNetApi.Repositories
             }
         }
 
+        // Metodo para obtener las recetas favoritas
+        public List<RecipeViewModel> ObtenerRecetasFavoritas(long userId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            var query = @"
+        SELECT r.Id, r.Name, c.Name AS Category, i.Name AS IngredientName, i.Quantity, rs.StepNumber, rs.Description
+        FROM Favorites f
+        INNER JOIN Recipes r ON f.RecipeId = r.Id
+        INNER JOIN Categories c ON r.CategoryId = c.Id
+        LEFT JOIN Ingredients i ON i.RecipeId = r.Id
+        LEFT JOIN RecipeSteps rs ON rs.RecipeId = r.Id
+        WHERE f.UserId = @UserId
+        ORDER BY r.Id, rs.StepNumber";
+
+            var recetas = connection.Query<RecipeViewModel>(query, new { UserId = userId }).ToList();
+            return recetas;
+        }
+
 
 
 

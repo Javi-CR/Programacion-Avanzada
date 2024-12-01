@@ -50,3 +50,36 @@
         })
         .catch(err => alert('Error: ' + err.message));
 });
+
+// Funcion parar cargar las recetas favoritas del usuario
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('/Recetas/ObtenerRecetasFavoritas')
+        .then(response => response.json())
+        .then(data => {
+            const recipeCards = document.getElementById('recipeCards');
+            recipeCards.innerHTML = '';
+
+            data.forEach(recipe => {
+                const card = `
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold">${recipe.Name}</h5>
+                                <p><strong>Ingredientes:</strong></p>
+                                <ul>${recipe.Ingredients.map(ing => `<li>${ing.Name}, ${ing.Quantity}</li>`).join('')}</ul>
+                                <p><strong>Pasos:</strong></p>
+                                <ul>${recipe.Steps.map(step => `<li>${step.Description}</li>`).join('')}</ul>
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-warning text-white btn-sm">Editar</button>
+                                    <button class="btn btn-danger text-white btn-sm">Eliminar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                recipeCards.innerHTML += card;
+            });
+        })
+        .catch(err => console.error('Error al cargar recetas favoritas:', err));
+});
+

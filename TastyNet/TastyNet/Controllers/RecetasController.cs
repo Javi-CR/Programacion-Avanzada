@@ -34,5 +34,19 @@ namespace TastyNet.Controllers
                 return StatusCode(500, $"Error interno: {ex.Message}");
             }
         }
+
+        // Metodo para cargar las recetas favoritas del usuario
+        [HttpGet]
+        public async Task<IActionResult> ObtenerRecetasFavoritas()
+        {
+            var userId = 1; 
+            var recetas = await _recetaService.ObtenerRecetasFavoritasAsync(userId);
+            return Json(recetas);
+        }
+
+
+
+
+
     }
 }
