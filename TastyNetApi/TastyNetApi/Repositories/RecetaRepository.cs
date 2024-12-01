@@ -19,14 +19,15 @@ namespace TastyNetApi.Repositories
             connection.Open();
             using var transaction = connection.BeginTransaction();
 
-
             try
             {
+                
                 var recipeId = connection.ExecuteScalar<int>(
                     "EXEC InsertRecipe @Name, @CategoryId, @UserId",
                     new { receta.Name, receta.CategoryId, UserId = 1 }, 
                     transaction);
 
+                
                 foreach (var ingredient in receta.Ingredients)
                 {
                     connection.Execute(
@@ -35,6 +36,7 @@ namespace TastyNetApi.Repositories
                         transaction);
                 }
 
+                
                 foreach (var step in receta.Steps)
                 {
                     connection.Execute(
@@ -42,6 +44,12 @@ namespace TastyNetApi.Repositories
                         new { RecipeId = recipeId, step.StepNumber, step.Description },
                         transaction);
                 }
+
+                
+                connection.Execute(
+                    "EXEC InsertFavorite @UserId, @RecipeId",
+                    new { UserId = 1, RecipeId = recipeId }, 
+                    transaction);
 
                 transaction.Commit();
                 return true;
@@ -52,5 +60,12 @@ namespace TastyNetApi.Repositories
                 return false;
             }
         }
+
+
+
+
+
+
+
     }
 }
