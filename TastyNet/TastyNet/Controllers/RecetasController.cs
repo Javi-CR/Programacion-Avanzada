@@ -39,7 +39,7 @@ namespace TastyNet.Controllers
         [HttpGet]
         public async Task<IActionResult> ObtenerRecetasFavoritas()
         {
-            var userId = 1; 
+            var userId = 1;
             var recetas = await _recetaService.ObtenerRecetasFavoritasAsync(userId);
             return Json(recetas);
         }

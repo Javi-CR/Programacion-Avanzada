@@ -22,5 +22,15 @@ namespace TastyNet.Servicios
             var response = await _httpClient.PostAsync("/api/Recetas", content);
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<List<RecipeViewModel>> ObtenerRecetasFavoritasAsync(long userId)
+        {
+            var response = await _httpClient.GetAsync($"/api/Recetas/ObtenerRecetasFavoritas?userId={userId}");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("Error al obtener recetas favoritas.");
+
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<RecipeViewModel>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
     }
 }

@@ -29,5 +29,16 @@ namespace TastyNetApi.Controllers
             return Ok(new { Message = "Receta creada exitosamente" });
         }
 
+        [HttpGet("ObtenerRecetasFavoritas")]
+        public IActionResult ObtenerRecetasFavoritas(long userId)
+        {
+            var recetas = _recetaRepository.ObtenerRecetasFavoritas(userId);
+            if (recetas == null || !recetas.Any())
+                return NotFound("No se encontraron recetas favoritas para este usuario.");
+
+            return Ok(recetas);
+        }
+
+
     }
 }
