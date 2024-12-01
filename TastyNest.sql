@@ -337,3 +337,15 @@ BEGIN
 END;
 GO
 
+-- (Agregado RicardoA 01/12)
+CREATE PROCEDURE InsertFavorite
+    @UserId BIGINT,
+    @RecipeId BIGINT
+AS
+BEGIN
+    INSERT INTO Favorites (UserId, RecipeId, CreatedFavorites)
+    VALUES (@UserId, @RecipeId, GETDATE());
+END;
+GO
+
+
