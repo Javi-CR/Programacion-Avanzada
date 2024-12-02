@@ -371,5 +371,23 @@ BEGIN
 END;
 GO
 
+-- (Agregado RicardoA 01/12)
+CREATE PROCEDURE AgregarAFavoritos
+    @UserId BIGINT,
+    @RecipeId BIGINT
+AS
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM Favorites 
+        WHERE UserId = @UserId AND RecipeId = @RecipeId
+    )
+    BEGIN
+        INSERT INTO Favorites (UserId, RecipeId, CreatedFavorites)
+        VALUES (@UserId, @RecipeId, GETDATE());
+    END
+END;
+GO
+
 
 
