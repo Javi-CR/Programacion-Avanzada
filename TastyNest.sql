@@ -354,12 +354,12 @@ CREATE PROCEDURE GetFavoriteRecipes
 AS
 BEGIN
     SELECT 
-        r.Id,
-        r.Name,
-        c.Name AS Category,
+        r.Id AS RecipeId,
+        r.Name AS RecipeName,
+        c.Name AS CategoryName,
         i.Name AS IngredientName,
-        i.Quantity,
-        s.StepNumber,
+        i.Quantity AS IngredientQuantity,
+        s.StepNumber AS StepNumber,
         s.Description AS StepDescription
     FROM Favorites f
     INNER JOIN Recipes r ON f.RecipeId = r.Id
@@ -370,6 +370,8 @@ BEGIN
     ORDER BY r.Id, s.StepNumber;
 END;
 GO
+
+
 
 -- (Agregado RicardoA 01/12)
 CREATE PROCEDURE AgregarAFavoritos

@@ -66,25 +66,37 @@ document.addEventListener("DOMContentLoaded", () => {
             const recipeCards = document.getElementById('recipeCards');
             recipeCards.innerHTML = '';
 
-            if (!Array.isArray(data) || data.length === 0) {
-                // Mostrar mensaje de "No hay recetas favoritas"
-                recipeCards.innerHTML = `<p class="text-center">No hay recetas favoritas aún.</p>`;
-                return;
+            // Validar que data sea un array antes de procesarlo
+            if (!Array.isArray(data)) {
+                throw new Error("La respuesta no es un array válido.");
             }
 
+            // Crear las cards para las recetas favoritas
             data.forEach(recipe => {
+                // Validar que recipe tenga las propiedades esperadas
+                if (!recipe || !recipe.Ingredients || !recipe.Steps) {
+                    console.warn("Receta incompleta omitida:", recipe);
+                    return;
+                }
+
                 const card = `
                     <div class="col-md-4 mb-4">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title fw-bold">${recipe.Name || "Receta sin nombre"}</h5>
+                                <h5 class="card-title fw-bold">${recipe.Name || "Sin nombre"}</h5>
                                 <p><strong>Ingredientes:</strong></p>
                                 <ul>
-                                    ${recipe.Ingredients.map(ing => `<li>${ing.Name || "Ingrediente desconocido"}, ${ing.Quantity || "Cantidad no especificada"}</li>`).join('')}
+                                    ${recipe.Ingredients.length
+                        ? recipe.Ingredients.map(ing => `<li>${ing.Name || "Desconocido"}, ${ing.Quantity || ""}</li>`).join('')
+                        : "<li>No hay ingredientes</li>"
+                    }
                                 </ul>
                                 <p><strong>Pasos:</strong></p>
                                 <ul>
-                                    ${recipe.Steps.map(step => `<li>${step.Description || "Paso sin descripción"}</li>`).join('')}
+                                    ${recipe.Steps.length
+                        ? recipe.Steps.map(step => `<li>${step.Description || "Sin descripción"}</li>`).join('')
+                        : "<li>No hay pasos</li>"
+                    }
                                 </ul>
                                 <div class="d-flex justify-content-between">
                                     <button class="btn btn-warning text-white btn-sm">Editar</button>
@@ -94,9 +106,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                 `;
-             recipeCards.innerHTML += card;
-             });
+                recipeCards.innerHTML += card;
+            });
         })
-        .catch(err => console.error('Error al cargar recetas favoritas:', err));
+        .catch(err => console.error('Error al cargar recetas favoritas:', err.message));
 });
+
 
