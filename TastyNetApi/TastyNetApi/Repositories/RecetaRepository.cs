@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data;
+using System.Data.SqlClient;
 using Dapper;
 using TastyNetApi.Models;
 
@@ -55,27 +56,11 @@ namespace TastyNetApi.Repositories
         public List<RecipeViewModel> ObtenerRecetasFavoritas(long userId)
         {
             using var connection = new SqlConnection(_connectionString);
-            var query = @"
-                SELECT 
-                    r.Id,
-                    r.Name,
-                    c.Name AS Category,
-                    i.Name AS IngredientName,
-                    i.Quantity,
-                    s.StepNumber,
-                    s.Description AS StepDescription
-                FROM Favorites f
-                INNER JOIN Recipes r ON f.RecipeId = r.Id
-                INNER JOIN Categories c ON r.CategoryId = c.Id
-                LEFT JOIN Ingredients i ON r.Id = i.RecipeId
-                LEFT JOIN RecipeSteps s ON r.Id = s.RecipeId
-                WHERE f.UserId = @UserId
-                ORDER BY r.Id, s.StepNumber";
 
             var recipeDictionary = new Dictionary<long, RecipeViewModel>();
 
             var recipes = connection.Query<RecipeViewModel, IngredientViewModel, StepViewModel, RecipeViewModel>(
-                query,
+                "GetFavoriteRecipes", // Llamada al procedimiento almacenado
                 (recipe, ingredient, step) =>
                 {
                     if (!recipeDictionary.TryGetValue(recipe.Id, out var recipeEntry))
@@ -98,11 +83,13 @@ namespace TastyNetApi.Repositories
 
                     return recipeEntry;
                 },
-                new { UserId = userId },
-                splitOn: "IngredientName,StepNumber"
+                new { UserId = userId }, // Parámetro del procedimiento almacenado
+                splitOn: "IngredientName,StepNumber",
+                commandType: CommandType.StoredProcedure // Especifica que es un procedimiento almacenado
             );
 
             return recipes.Distinct().ToList();
         }
+
     }
 }

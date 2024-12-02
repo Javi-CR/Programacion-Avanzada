@@ -348,4 +348,28 @@ BEGIN
 END;
 GO
 
+-- (Agregado RicardoA 01/12)
+CREATE PROCEDURE GetFavoriteRecipes
+    @UserId BIGINT
+AS
+BEGIN
+    SELECT 
+        r.Id,
+        r.Name,
+        c.Name AS Category,
+        i.Name AS IngredientName,
+        i.Quantity,
+        s.StepNumber,
+        s.Description AS StepDescription
+    FROM Favorites f
+    INNER JOIN Recipes r ON f.RecipeId = r.Id
+    INNER JOIN Categories c ON r.CategoryId = c.Id
+    LEFT JOIN Ingredients i ON r.Id = i.RecipeId
+    LEFT JOIN RecipeSteps s ON r.Id = s.RecipeId
+    WHERE f.UserId = @UserId
+    ORDER BY r.Id, s.StepNumber;
+END;
+GO
+
+
 
