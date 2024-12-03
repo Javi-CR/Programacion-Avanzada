@@ -8,7 +8,7 @@ namespace TastyNetApi.Models
         public DbSet<Recipe> Recipes { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<RecipeStep> RecipeSteps { get; set; }
-        public DbSet<Favorite> Favorites { get; set; } // Aquí está el DbSet faltante
+        public DbSet<Favorite> Favorites { get; set; }
 
         public TastyNestDbContext(DbContextOptions<TastyNestDbContext> options) : base(options)
         {

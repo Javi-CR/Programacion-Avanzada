@@ -16,7 +16,7 @@ namespace TastyNet.Controllers
         }
 
         [HttpPost("CrearReceta")]
-        public async Task<IActionResult> CrearReceta([FromBody] RecetaCreateModel model)
+        public async Task<IActionResult> CrearReceta([FromBody] Recipe model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -35,18 +35,12 @@ namespace TastyNet.Controllers
             }
         }
 
-        // Metodo para cargar las recetas favoritas del usuario
-        [HttpGet]
+        [HttpGet("ObtenerRecetasFavoritas")]
         public async Task<IActionResult> ObtenerRecetasFavoritas()
         {
-            var userId = 1;
+            var userId = 1; // Usuario fijo por ahora
             var recetas = await _recetaService.ObtenerRecetasFavoritasAsync(userId);
             return Json(recetas);
         }
-
-
-
-
-
     }
 }

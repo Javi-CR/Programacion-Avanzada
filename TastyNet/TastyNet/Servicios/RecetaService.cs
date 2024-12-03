@@ -14,12 +14,12 @@ namespace TastyNet.Servicios
             _httpClient = httpClient;
         }
 
-        public async Task<bool> CrearRecetaAsync(RecetaCreateModel receta)
+        public async Task<bool> CrearRecetaAsync(Recipe receta)
         {
             var json = JsonSerializer.Serialize(receta);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("/api/Recetas", content);
+            var response = await _httpClient.PostAsync("/api/Recetas/CrearReceta", content);
             return response.IsSuccessStatusCode;
         }
 
