@@ -371,6 +371,10 @@ BEGIN
 END;
 GO
 
+USE TastyNest;
+GO
+
+EXEC GetFavoriteRecipes @UserId = 1;
 
 
 -- (Agregado RicardoA 01/12)
@@ -390,6 +394,29 @@ BEGIN
     END
 END;
 GO
+
+ALTER PROCEDURE GetFavoriteRecipes
+    @UserId BIGINT
+AS
+BEGIN
+    SELECT 
+        r.Id AS Id,
+        r.Name AS Name,
+        c.Name AS Category,
+        ISNULL(i.Name, '') AS IngredientName,
+        ISNULL(i.Quantity, '') AS IngredientQuantity, -- Cambiar alias aquí
+        ISNULL(s.StepNumber, 0) AS StepNumber,
+        ISNULL(s.Description, '') AS StepDescription
+    FROM Favorites f
+    INNER JOIN Recipes r ON f.RecipeId = r.Id
+    INNER JOIN Categories c ON r.CategoryId = c.Id
+    LEFT JOIN Ingredients i ON r.Id = i.RecipeId
+    LEFT JOIN RecipeSteps s ON r.Id = s.RecipeId
+    WHERE f.UserId = @UserId
+    ORDER BY r.Id, s.StepNumber;
+END;
+GO
+
 
 
 

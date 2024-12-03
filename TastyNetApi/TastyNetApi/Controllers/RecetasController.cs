@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TastyNetApi.Models;
-using TastyNetApi.Repositories;
-
 
 namespace TastyNetApi.Controllers
 {
@@ -9,59 +8,79 @@ namespace TastyNetApi.Controllers
     [ApiController]
     public class RecetasController : ControllerBase
     {
-        private readonly IRecetaRepository _recetaRepository;
+        private readonly TastyNestDbContext _dbContext;
 
-        public RecetasController(IRecetaRepository recetaRepository)
+        public RecetasController(TastyNestDbContext dbContext)
         {
-            _recetaRepository = recetaRepository;
+            _dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Crea una nueva receta y sus ingredientes y pasos asociados.
+        /// </summary>
         [HttpPost("CrearReceta")]
-        public IActionResult CrearReceta([FromBody] RecetaCreateModel receta)
+        public async Task<IActionResult> CrearReceta([FromBody] Recipe receta)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Datos inválidos");
 
-            // Crear la receta y obtener el ID generado
-            var recipeId = _recetaRepository.CrearRecetaYObtenerId(receta);
-            if (recipeId <= 0)
-                return StatusCode(500, "Error al crear la receta");
+            // Establecer un UserId fijo para este ejemplo
+            const long userId = 1;
 
-            // Agregar la receta a favoritos
-            var favoritoAgregado = _recetaRepository.AgregarAFavoritos(1, recipeId); // ID de usuario fijo por ahora
-            if (!favoritoAgregado)
-                return StatusCode(500, "Error al agregar la receta a favoritos");
-
-            return Ok(new { Message = "Receta creada exitosamente y añadida a favoritos" });
-        }
-
-
-        [HttpGet("ObtenerRecetasFavoritas")]
-        public IActionResult ObtenerRecetasFavoritas(long userId)
-        {
-            var recetas = _recetaRepository.ObtenerRecetasFavoritas(userId);
-
-            // esto es para validacion y limpieza de datos nulos si los hay
-            var recetasLimpias = recetas.Select(r => new RecipeViewModel
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
             {
-                Id = r.Id,
-                Name = r.Name ?? "Sin nombre",
-                Category = r.Category ?? "Sin categoría",
-                Ingredients = r.Ingredients
-                    .Where(i => !string.IsNullOrWhiteSpace(i.Name) && !string.IsNullOrWhiteSpace(i.Quantity))
-                    .ToList(),
-                Steps = r.Steps
-                    .Where(s => !string.IsNullOrWhiteSpace(s.Description))
-                    .ToList()
-            }).ToList();
+                // Asignar el UserId fijo a la receta
+                receta.UserId = userId;
 
-            if (recetasLimpias == null || !recetasLimpias.Any())
-                return Ok(new List<RecipeViewModel>()); // Retorna lista vacía si no hay recetas.
+                // Agregar la receta al contexto
+                _dbContext.Recipes.Add(receta);
+                await _dbContext.SaveChangesAsync();
 
-            return Ok(recetasLimpias);
+                // Asociar los ingredientes con la receta creada
+                foreach (var ingredient in receta.Ingredients)
+                {
+                    ingredient.RecipeId = receta.Id;
+                    _dbContext.Ingredients.Add(ingredient);
+                }
+
+                // Asociar los pasos con la receta creada
+                foreach (var step in receta.RecipeSteps)
+                {
+                    step.RecipeId = receta.Id;
+                    _dbContext.RecipeSteps.Add(step);
+                }
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { Message = "Receta creada exitosamente." });
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, "Error al crear la receta");
+            }
         }
 
+        /// <summary>
+        /// Obtiene las recetas favoritas de un usuario fijo (UserId = 1).
+        /// </summary>
+        [HttpGet("ObtenerRecetasFavoritas")]
+        public async Task<IActionResult> ObtenerRecetasFavoritas(long userId)
+        {
+            var recetasFavoritas = await _dbContext.Favorites
+                .Include(f => f.Recipe)
+                    .ThenInclude(r => r.Ingredients)
+                .Include(f => f.Recipe)
+                    .ThenInclude(r => r.RecipeSteps)
+                .Include(f => f.Recipe)
+                    .ThenInclude(r => r.Category)
+                .Select(f => f.Recipe)
+                .ToListAsync();
 
+            return Ok(recetasFavoritas);
+        }
 
     }
 }
