@@ -22,33 +22,28 @@ namespace TastyNetApi.Controllers
         public async Task<IActionResult> CrearReceta([FromBody] Recipe receta)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Datos inválidos");
-
-            // Establecer un UserId fijo para este ejemplo
-            const long userId = 1;
+                return BadRequest(ModelState);
 
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                // Asignar el UserId fijo a la receta
-                receta.UserId = userId;
+                
+                receta.UserId = 1; 
 
-                // Agregar la receta al contexto
+                receta.Ingredients ??= new List<Ingredient>();
+                receta.RecipeSteps ??= new List<RecipeStep>();
+
                 _dbContext.Recipes.Add(receta);
                 await _dbContext.SaveChangesAsync();
 
-                // Asociar los ingredientes con la receta creada
                 foreach (var ingredient in receta.Ingredients)
                 {
                     ingredient.RecipeId = receta.Id;
-                    _dbContext.Ingredients.Add(ingredient);
                 }
 
-                // Asociar los pasos con la receta creada
                 foreach (var step in receta.RecipeSteps)
                 {
                     step.RecipeId = receta.Id;
-                    _dbContext.RecipeSteps.Add(step);
                 }
 
                 await _dbContext.SaveChangesAsync();
@@ -56,12 +51,14 @@ namespace TastyNetApi.Controllers
 
                 return Ok(new { Message = "Receta creada exitosamente." });
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, "Error al crear la receta");
+                return StatusCode(500, $"Error al crear la receta: {ex.Message}");
             }
         }
+
+
 
         /// <summary>
         /// Obtiene las recetas favoritas de un usuario fijo (UserId = 1).

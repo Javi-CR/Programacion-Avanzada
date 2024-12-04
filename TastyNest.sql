@@ -400,13 +400,13 @@ ALTER PROCEDURE GetFavoriteRecipes
 AS
 BEGIN
     SELECT 
-        r.Id AS Id,
-        r.Name AS Name,
-        c.Name AS Category,
-        ISNULL(i.Name, '') AS IngredientName,
-        ISNULL(i.Quantity, '') AS IngredientQuantity, -- Cambiar alias aquí
-        ISNULL(s.StepNumber, 0) AS StepNumber,
-        ISNULL(s.Description, '') AS StepDescription
+        r.Id AS RecipeId,
+        r.Name AS RecipeName,
+        c.Name AS CategoryName,
+        i.Name AS IngredientName,
+        i.Quantity AS IngredientQuantity, -- Cambiado aquí
+        s.StepNumber AS StepNumber,
+        s.Description AS StepDescription
     FROM Favorites f
     INNER JOIN Recipes r ON f.RecipeId = r.Id
     INNER JOIN Categories c ON r.CategoryId = c.Id
@@ -416,6 +416,7 @@ BEGIN
     ORDER BY r.Id, s.StepNumber;
 END;
 GO
+
 
 
 

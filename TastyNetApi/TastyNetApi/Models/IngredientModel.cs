@@ -8,6 +8,6 @@
         public string Quantity { get; set; }
 
         // Relación con Recipe
-        public Recipe Recipe { get; set; }
+        public Recipe? Recipe { get; set; }
     }
 }

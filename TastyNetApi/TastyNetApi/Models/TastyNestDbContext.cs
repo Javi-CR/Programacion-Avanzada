@@ -16,24 +16,20 @@ namespace TastyNetApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configuración de relaciones
-            modelBuilder.Entity<Favorite>()
-                .HasOne(f => f.Recipe)
-                .WithMany(r => r.Favorites)
-                .HasForeignKey(f => f.RecipeId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<Ingredient>()
                 .HasOne(i => i.Recipe)
                 .WithMany(r => r.Ingredients)
-                .HasForeignKey(i => i.RecipeId);
+                .HasForeignKey(i => i.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade); 
 
             modelBuilder.Entity<RecipeStep>()
                 .HasOne(s => s.Recipe)
                 .WithMany(r => r.RecipeSteps)
-                .HasForeignKey(s => s.RecipeId);
+                .HasForeignKey(s => s.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade); 
 
             base.OnModelCreating(modelBuilder);
         }
+
     }
 }
