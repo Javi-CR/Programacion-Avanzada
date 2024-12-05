@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
+using System.Data;
 using TastyNetApi.Models;
 
 namespace TastyNetApi.Controllers
@@ -8,76 +10,149 @@ namespace TastyNetApi.Controllers
     [ApiController]
     public class RecetasController : ControllerBase
     {
-        private readonly TastyNestDbContext _dbContext;
+        private readonly IConfiguration _configuration;
 
-        public RecetasController(TastyNestDbContext dbContext)
+        public RecetasController(IConfiguration configuration)
         {
-            _dbContext = dbContext;
+            _configuration = configuration;
         }
 
-        /// <summary>
-        /// Crea una nueva receta y sus ingredientes y pasos asociados.
-        /// </summary>
         [HttpPost("CrearReceta")]
         public async Task<IActionResult> CrearReceta([FromBody] Recipe receta)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest("Datos inválidos");
 
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            using var transaction = connection.BeginTransaction();
+
             try
             {
-                
-                receta.UserId = 1; 
+                // Insertar la receta y obtener su ID
+                var recipeId = await InsertRecipeAsync(connection, transaction, receta.Name, receta.CategoryId, receta.UserId);
 
-                receta.Ingredients ??= new List<Ingredient>();
-                receta.RecipeSteps ??= new List<RecipeStep>();
-
-                _dbContext.Recipes.Add(receta);
-                await _dbContext.SaveChangesAsync();
-
+                // Insertar los ingredientes
                 foreach (var ingredient in receta.Ingredients)
                 {
-                    ingredient.RecipeId = receta.Id;
+                    await InsertIngredientAsync(connection, transaction, recipeId, ingredient.Name, ingredient.Quantity);
                 }
 
+                // Insertar los pasos
                 foreach (var step in receta.RecipeSteps)
                 {
-                    step.RecipeId = receta.Id;
+                    await InsertRecipeStepAsync(connection, transaction, recipeId, step.StepNumber, step.Description);
                 }
 
-                await _dbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
+                // Agregar la receta a favoritos
+                await InsertFavoriteAsync(connection, transaction, receta.UserId, recipeId);
 
+                await transaction.CommitAsync();
                 return Ok(new { Message = "Receta creada exitosamente." });
             }
-            catch (Exception ex)
+            catch
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, $"Error al crear la receta: {ex.Message}");
+                return StatusCode(500, "Error al crear la receta");
             }
         }
 
-
-
-        /// <summary>
-        /// Obtiene las recetas favoritas de un usuario fijo (UserId = 1).
-        /// </summary>
         [HttpGet("ObtenerRecetasFavoritas")]
         public async Task<IActionResult> ObtenerRecetasFavoritas(long userId)
         {
-            var recetasFavoritas = await _dbContext.Favorites
-                .Include(f => f.Recipe)
-                    .ThenInclude(r => r.Ingredients)
-                .Include(f => f.Recipe)
-                    .ThenInclude(r => r.RecipeSteps)
-                .Include(f => f.Recipe)
-                    .ThenInclude(r => r.Category)
-                .Select(f => f.Recipe)
-                .ToListAsync();
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
 
-            return Ok(recetasFavoritas);
+            try
+            {
+                var recetasFavoritas = await GetFavoriteRecipesAsync(connection, userId);
+                return Ok(recetasFavoritas);
+            }
+            catch
+            {
+                return StatusCode(500, "Error al obtener las recetas favoritas");
+            }
         }
 
+        private async Task<long> InsertRecipeAsync(SqlConnection connection, SqlTransaction transaction, string name, long categoryId, long userId)
+        {
+            using var command = new SqlCommand("InsertRecipe", connection, transaction)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@Name", name);
+            command.Parameters.AddWithValue("@CategoryId", categoryId);
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            return Convert.ToInt64(await command.ExecuteScalarAsync());
+        }
+
+        private async Task InsertIngredientAsync(SqlConnection connection, SqlTransaction transaction, long recipeId, string name, string quantity)
+        {
+            using var command = new SqlCommand("InsertIngredient", connection, transaction)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@RecipeId", recipeId);
+            command.Parameters.AddWithValue("@Name", name);
+            command.Parameters.AddWithValue("@Quantity", quantity);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        private async Task InsertRecipeStepAsync(SqlConnection connection, SqlTransaction transaction, long recipeId, int stepNumber, string description)
+        {
+            using var command = new SqlCommand("InsertRecipeStep", connection, transaction)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@RecipeId", recipeId);
+            command.Parameters.AddWithValue("@StepNumber", stepNumber);
+            command.Parameters.AddWithValue("@Description", description);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        private async Task InsertFavoriteAsync(SqlConnection connection, SqlTransaction transaction, long userId, long recipeId)
+        {
+            using var command = new SqlCommand("InsertFavorite", connection, transaction)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@UserId", userId);
+            command.Parameters.AddWithValue("@RecipeId", recipeId);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        private async Task<List<dynamic>> GetFavoriteRecipesAsync(SqlConnection connection, long userId)
+        {
+            using var command = new SqlCommand("GetFavoriteRecipes", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            var result = new List<dynamic>();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new
+                {
+                    RecipeId = reader.GetInt64(0),
+                    RecipeName = reader.GetString(1),
+                    CategoryName = reader.GetString(2),
+                    IngredientName = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    IngredientQuantity = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    StepNumber = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
+                    StepDescription = reader.IsDBNull(6) ? null : reader.GetString(6),
+                });
+            }
+
+            return result;
+        }
     }
 }

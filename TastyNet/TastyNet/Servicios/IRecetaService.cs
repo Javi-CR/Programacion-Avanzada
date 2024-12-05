@@ -6,7 +6,7 @@ namespace TastyNet.Servicios
 {
     public interface IRecetaService
     {
-        Task<bool> CrearRecetaAsync(Recipe receta);
+        Task<string> CrearRecetaAsync(Recipe receta);
         Task<List<RecipeViewModel>> ObtenerRecetasFavoritasAsync(long userId);
     }
 }
