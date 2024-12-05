@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using TastyNetApi.Models;
@@ -31,31 +30,28 @@ namespace TastyNetApi.Controllers
 
             try
             {
-                // Insertar la receta y obtener su ID
                 var recipeId = await InsertRecipeAsync(connection, transaction, receta.Name, receta.CategoryId, receta.UserId);
 
-                // Insertar los ingredientes
                 foreach (var ingredient in receta.Ingredients)
                 {
                     await InsertIngredientAsync(connection, transaction, recipeId, ingredient.Name, ingredient.Quantity);
                 }
 
-                // Insertar los pasos
                 foreach (var step in receta.RecipeSteps)
                 {
                     await InsertRecipeStepAsync(connection, transaction, recipeId, step.StepNumber, step.Description);
                 }
 
-                // Agregar la receta a favoritos
                 await InsertFavoriteAsync(connection, transaction, receta.UserId, recipeId);
 
                 await transaction.CommitAsync();
                 return Ok(new { Message = "Receta creada exitosamente." });
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, "Error al crear la receta");
+                Console.WriteLine($"Error en CrearReceta: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Error al crear la receta.");
             }
         }
 
@@ -64,15 +60,22 @@ namespace TastyNetApi.Controllers
         {
             var connectionString = _configuration.GetConnectionString("DefaultConnection");
             using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
 
             try
             {
                 var recetasFavoritas = await GetFavoriteRecipesAsync(connection, userId);
                 return Ok(recetasFavoritas);
             }
-            catch
+            catch (InvalidOperationException ex)
             {
-                return StatusCode(500, "Error al obtener las recetas favoritas");
+                Console.WriteLine($"Error en ObtenerRecetasFavoritas: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, $"Error interno: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inesperado en ObtenerRecetasFavoritas: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Error inesperado al obtener las recetas favoritas.");
             }
         }
 
@@ -129,30 +132,44 @@ namespace TastyNetApi.Controllers
 
         private async Task<List<dynamic>> GetFavoriteRecipesAsync(SqlConnection connection, long userId)
         {
-            using var command = new SqlCommand("GetFavoriteRecipes", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.AddWithValue("@UserId", userId);
-
-            using var reader = await command.ExecuteReaderAsync();
-            var result = new List<dynamic>();
-
-            while (await reader.ReadAsync())
-            {
-                result.Add(new
+                using var command = new SqlCommand("GetFavoriteRecipes", connection)
                 {
-                    RecipeId = reader.GetInt64(0),
-                    RecipeName = reader.GetString(1),
-                    CategoryName = reader.GetString(2),
-                    IngredientName = reader.IsDBNull(3) ? null : reader.GetString(3),
-                    IngredientQuantity = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    StepNumber = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
-                    StepDescription = reader.IsDBNull(6) ? null : reader.GetString(6),
-                });
-            }
+                    CommandType = CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@UserId", userId);
 
-            return result;
+                using var reader = await command.ExecuteReaderAsync();
+                var result = new List<dynamic>();
+
+                while (await reader.ReadAsync())
+                {
+                    try
+                    {
+                        result.Add(new
+                        {
+                            RecipeId = reader.GetInt64(0),
+                            RecipeName = reader.GetString(1),
+                            CategoryName = reader.GetString(2),
+                            IngredientName = reader.IsDBNull(3) ? null : reader.GetString(3),
+                            IngredientQuantity = reader.IsDBNull(4) ? null : reader.GetString(4),
+                            StepNumber = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
+                            StepDescription = reader.IsDBNull(6) ? null : reader.GetString(6)
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException($"Error al procesar el registro actual: {ex.Message}\nStackTrace: {ex.StackTrace}", ex);
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al ejecutar el procedimiento almacenado: {ex.Message}\nStackTrace: {ex.StackTrace}", ex);
+            }
         }
     }
 }

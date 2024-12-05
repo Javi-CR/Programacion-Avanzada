@@ -404,7 +404,7 @@ BEGIN
         r.Name AS RecipeName,
         c.Name AS CategoryName,
         i.Name AS IngredientName,
-        i.Quantity AS IngredientQuantity, -- Cambiado aquí
+        i.Quantity AS IngredientQuantity,
         s.StepNumber AS StepNumber,
         s.Description AS StepDescription
     FROM Favorites f
@@ -415,7 +415,6 @@ BEGIN
     WHERE f.UserId = @UserId
     ORDER BY r.Id, s.StepNumber;
 END;
-GO
 
 
 
