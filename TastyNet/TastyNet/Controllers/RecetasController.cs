@@ -18,16 +18,13 @@ namespace TastyNet.Controllers
         [HttpPost("CrearReceta")]
         public async Task<IActionResult> CrearReceta([FromBody] Recipe model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (model == null || string.IsNullOrWhiteSpace(model.Name))
+                return BadRequest("El modelo o el nombre de la receta no puede ser nulo.");
 
             try
             {
-                var result = await _recetaService.CrearRecetaAsync(model);
-                if (!result)
-                    return StatusCode(500, "Error al crear la receta");
-
-                return Ok(new { Message = "Receta creada exitosamente" });
+                var message = await _recetaService.CrearRecetaAsync(model);
+                return Ok(new { Message = message });
             }
             catch (Exception ex)
             {
@@ -38,9 +35,16 @@ namespace TastyNet.Controllers
         [HttpGet("ObtenerRecetasFavoritas")]
         public async Task<IActionResult> ObtenerRecetasFavoritas()
         {
-            var userId = 1; // Usuario fijo por ahora
-            var recetas = await _recetaService.ObtenerRecetasFavoritasAsync(userId);
-            return Json(recetas);
+            var userId = 1; // Usuario fijo para prueba
+            try
+            {
+                var recetas = await _recetaService.ObtenerRecetasFavoritasAsync(userId);
+                return Json(recetas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno: {ex.Message}");
+            }
         }
     }
 }
