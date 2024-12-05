@@ -1,4 +1,6 @@
-﻿namespace TastyNetApi.Models
+﻿using System.Text.Json.Serialization;
+
+namespace TastyNetApi.Models
 {
     public class Ingredient
     {
@@ -8,6 +10,7 @@
         public string Quantity { get; set; }
 
         // Relación con Recipe
+        [JsonIgnore] // Evitar ciclos con Recipe -> Ingredients -> Recipe
         public Recipe? Recipe { get; set; }
     }
 }
