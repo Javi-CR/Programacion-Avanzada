@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TastyNet.Servicios;
 using TastyNet.Models;
+using Microsoft.Extensions.Configuration;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace TastyNet.Controllers
 {
@@ -46,5 +49,41 @@ namespace TastyNet.Controllers
                 return StatusCode(500, $"Error interno: {ex.Message}");
             }
         }
+
+        [HttpDelete("EliminarReceta/{recipeId}")]
+        public async Task<IActionResult> EliminarReceta(long recipeId)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                // Llama al procedimiento almacenado para eliminar la receta y sus datos relacionados
+                using var command = new SqlCommand("DeleteRecipe", connection, transaction)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@RecipeId", recipeId);
+                await command.ExecuteNonQueryAsync();
+
+                await transaction.CommitAsync();
+                return Ok(new { Message = "Receta eliminada exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Error al eliminar la receta: {ex.Message}");
+            }
+        }
+
+
+
+
+
+
+
+
     }
 }

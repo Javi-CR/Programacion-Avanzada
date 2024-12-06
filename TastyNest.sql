@@ -416,7 +416,39 @@ BEGIN
     ORDER BY r.Id, s.StepNumber;
 END;
 
+EXEC GetFavoriteRecipes @UserId = 1;
 
+-- (Agregado RicardoA 05/12)
+CREATE PROCEDURE DeleteRecipe
+    @RecipeId BIGINT
+AS
+BEGIN
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
+        -- Eliminar los favoritos relacionados con la receta
+        DELETE FROM Favorites
+        WHERE RecipeId = @RecipeId;
+
+        -- Eliminar los pasos de la receta
+        DELETE FROM RecipeSteps
+        WHERE RecipeId = @RecipeId;
+
+        -- Eliminar los ingredientes de la receta
+        DELETE FROM Ingredients
+        WHERE RecipeId = @RecipeId;
+
+        -- Eliminar la receta
+        DELETE FROM Recipes
+        WHERE Id = @RecipeId;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
 
 
