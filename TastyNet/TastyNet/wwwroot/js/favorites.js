@@ -123,10 +123,13 @@ function eliminarReceta(recipeId) {
         })
         .then(data => {
             alert(data.Message);
-            cargarRecetasFavoritas(); // Recargar las recetas favoritas sin recargar toda la página
+
+            // Eliminar la card correspondiente en la interfaz
+            document.querySelector(`[data-recipe-id="${recipeId}"]`).closest('.col-md-4').remove();
         })
         .catch(err => alert(`Error al eliminar la receta: ${err.message}`));
 }
+
 
 // Cargar recetas favoritas al cargar la página
 document.addEventListener("DOMContentLoaded", cargarRecetasFavoritas);
