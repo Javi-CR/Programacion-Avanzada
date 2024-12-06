@@ -8,5 +8,7 @@ namespace TastyNet.Servicios
     {
         Task<string> CrearRecetaAsync(Recipe receta);
         Task<List<RecipeViewModel>> ObtenerRecetasFavoritasAsync(long userId);
+        Task<string> EliminarRecetaAsync(long recipeId);
+
     }
 }

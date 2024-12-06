@@ -42,9 +42,33 @@ namespace TastyNet.Servicios
             var content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<RecipeViewModel>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
+
+
+        public async Task<string> EliminarRecetaAsync(long recipeId)
+        {
+            var response = await _httpClient.DeleteAsync($"/api/Recetas/EliminarReceta/{recipeId}");
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Error al eliminar la receta: {errorContent}");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<EliminarRecetaResponse>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return result?.Message ?? "Receta eliminada exitosamente.";
+        }
+
+
+
     }
 
     public class CreateRecipeResponse
+    {
+        public string Message { get; set; }
+    }
+
+
+    public class EliminarRecetaResponse
     {
         public string Message { get; set; }
     }
