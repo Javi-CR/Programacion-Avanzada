@@ -357,19 +357,20 @@ BEGIN
         r.Id AS RecipeId,
         r.Name AS RecipeName,
         c.Name AS CategoryName,
-        i.Name AS IngredientName,
-        i.Quantity AS IngredientQuantity,
-        s.StepNumber AS StepNumber,
-        s.Description AS StepDescription
+        (SELECT STRING_AGG(i.Name + ':' + i.Quantity, '; ')
+         FROM Ingredients i
+         WHERE i.RecipeId = r.Id) AS Ingredients,
+        (SELECT STRING_AGG(CONVERT(VARCHAR, s.StepNumber) + ': ' + s.Description, '; ')
+         FROM RecipeSteps s
+         WHERE s.RecipeId = r.Id) AS Steps
     FROM Favorites f
     INNER JOIN Recipes r ON f.RecipeId = r.Id
     INNER JOIN Categories c ON r.CategoryId = c.Id
-    LEFT JOIN Ingredients i ON r.Id = i.RecipeId
-    LEFT JOIN RecipeSteps s ON r.Id = s.RecipeId
     WHERE f.UserId = @UserId
-    ORDER BY r.Id, s.StepNumber;
+    ORDER BY r.Id;
 END;
 GO
+
 
 USE TastyNest;
 GO
@@ -450,5 +451,6 @@ BEGIN
     END CATCH
 END;
 GO
+
 
 
