@@ -36,7 +36,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
-builder.Services.AddScoped<CategoryRepository>(provider => new CategoryRepository(connectionString));
+
 
 var app = builder.Build();
 
