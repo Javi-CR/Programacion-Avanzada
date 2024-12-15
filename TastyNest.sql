@@ -396,6 +396,12 @@ BEGIN
         (SELECT STRING_AGG(CONVERT(VARCHAR, s.StepNumber) + ': ' + s.Description, '; ')
          FROM RecipeSteps s
          WHERE s.RecipeId = r.Id) AS Steps
+        ISNULL((SELECT STRING_AGG(i.Name + ':' + i.Quantity, '; ')
+                FROM Ingredients i
+                WHERE i.RecipeId = r.Id), 'Sin ingredientes') AS Ingredients,
+        ISNULL((SELECT STRING_AGG(CONVERT(VARCHAR, s.StepNumber) + ': ' + s.Description, '; ')
+                FROM RecipeSteps s
+                WHERE s.RecipeId = r.Id), 'Sin pasos') AS Steps
     FROM Favorites f
     INNER JOIN Recipes r ON f.RecipeId = r.Id
     INNER JOIN Categories c ON r.CategoryId = c.Id
@@ -403,6 +409,7 @@ BEGIN
     ORDER BY r.Id;
 END;
 GO
+
 
 
 USE TastyNest;
@@ -429,28 +436,6 @@ BEGIN
 END;
 GO
 
-ALTER PROCEDURE GetFavoriteRecipes
-    @UserId BIGINT
-AS
-BEGIN
-    SELECT 
-        r.Id AS RecipeId,
-        r.Name AS RecipeName,
-        c.Name AS CategoryName,
-        i.Name AS IngredientName,
-        i.Quantity AS IngredientQuantity,
-        s.StepNumber AS StepNumber,
-        s.Description AS StepDescription
-    FROM Favorites f
-    INNER JOIN Recipes r ON f.RecipeId = r.Id
-    INNER JOIN Categories c ON r.CategoryId = c.Id
-    LEFT JOIN Ingredients i ON r.Id = i.RecipeId
-    LEFT JOIN RecipeSteps s ON r.Id = s.RecipeId
-    WHERE f.UserId = @UserId
-    ORDER BY r.Id, s.StepNumber;
-END;
-
-EXEC GetFavoriteRecipes @UserId = 1;
 
 -- (Agregado RicardoA 05/12)
 CREATE PROCEDURE DeleteRecipe
