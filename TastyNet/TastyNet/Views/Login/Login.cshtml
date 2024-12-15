@@ -1,0 +1,61 @@
+﻿@model Users
+
+@{
+Layout = "~/Views/Shared/_LayoutDash.cshtml";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Login</h1>
+</div>
+
+<!-- Login Section -->
+<section id="login" class="contact section">
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Additional Information if needed -->
+        <div class="info-wrap" data-aos="fade-up" data-aos-delay="200">
+            <div class="row gy-5">
+                <div class="col-lg-12 text-center">
+                    <h2>Welcome</h2>
+                    <p>Please, log in to access your account.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <form asp-action="Login" asp-controller="Login" method="post" class="custom-form" data-aos="fade-up" data-aos-delay="300">
+            <div class="row gy-4 d-flex justify-content-center">
+
+                <!-- Email Input -->
+                <div class="col-md-8">
+                    <input type="email" asp-for="Email" class="form-control custom-input" style="max-width: 400px; margin: 0 auto;" placeholder="Your email address" required />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <!-- Password Input -->
+                <div class="col-md-8">
+                    <input type="password" asp-for="Password" class="form-control custom-input" style="max-width: 400px; margin: 0 auto;" placeholder="Your password" required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="col-md-12 text-center">
+                    <button type="submit" class="btn btn-success custom-button" style="max-width: 200px; margin: 0 auto;">Login</button>
+                </div>
+
+            </div>
+
+            <!-- Additional Links -->
+            <div class="row text-center mt-4">
+                <div class="col-md-12">
+                    <p><a asp-action="RecoverAccount" asp-controller="Login" class="custom-link">Forgot your password?</a></p>
+                    <p>Don't have an account? <a asp-action="Register" asp-controller="Login" class="custom-link">Sign up here</a></p>
+                </div>
+            </div>
+
+        </form><!-- End Login Form -->
+
+    </div>
+
+</section><!-- /Login Section -->

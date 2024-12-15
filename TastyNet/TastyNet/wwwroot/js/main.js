@@ -12,6 +12,12 @@
   /**
    * Apply .scrolled class to the body as the page is scrolled down
    */
+
+    document.querySelectorAll('.favorite-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            this.classList.toggle('active');
+        });
+    });
   function toggleScrolled() {
     const selectBody = document.querySelector('body');
     const selectHeader = document.querySelector('#header');
