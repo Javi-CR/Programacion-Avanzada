@@ -3,77 +3,74 @@ document.getElementById('createRecipeButton').addEventListener('click', function
     const form = document.getElementById('createRecipeForm');
     const name = document.getElementById('recipeName').value.trim();
     const categoryId = parseInt(document.getElementById('categoryId').value);
-    const ingredientsInput = document.getElementById('ingredients').value.trim();
-    const stepsInput = document.getElementById('steps').value.trim();
+    const userId = 1; // Hardcoded UserId (cámbialo a dinámico si corresponde)
 
     form.classList.add('was-validated');
-    if (!name || !categoryId || !ingredientsInput || !stepsInput) {
+    if (!name || !categoryId) {
         alert("Todos los campos son obligatorios.");
         return;
     }
 
-    try {
-        const ingredients = ingredientsInput.split(';').map(item => {
-            const [name, quantity] = item.split(',');
-            if (!name || !quantity) {
-                throw new Error("Formato de ingredientes incorrecto. Ejemplo: 'Harina, 2 tazas; Azúcar, 1 taza'");
-            }
-            return { Name: name.trim(), Quantity: quantity.trim() };
-        });
+    // Recolectar ingredientes y pasos dinámicamente
+    const ingredients = collectIngredients();
+    const steps = collectSteps();
 
-        const steps = stepsInput.split(';').map((desc, index) => {
-            if (!desc.trim()) {
-                throw new Error("Formato de pasos incorrecto. Ejemplo: 'Mezclar los ingredientes; Hornear'");
-            }
-            return { StepNumber: index + 1, Description: desc.trim() };
-        });
-
-        fetch('https://localhost:7044/api/Recetas/CrearReceta', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Name: name, CategoryId: categoryId, Ingredients: ingredients, Steps: steps }),
-        })
-            .then(response => {
-                if (!response.ok) return response.text().then(text => { throw new Error(text); });
-                return response.json();
-            })
-            .then(data => {
-                alert(data.Message);
-                location.reload(); // Recargar la página tras crear la receta
-            })
-            .catch(err => alert(`Error al crear receta: ${err.message}`));
-    } catch (err) {
-        alert(`Error: ${err.message}`);
+    if (ingredients.length === 0 || steps.length === 0) {
+        alert("Debe incluir al menos un ingrediente y un paso.");
+        return;
     }
+
+    // JSON a enviar
+    const requestData = {
+        name,
+        categoryId,
+        userId,
+        ingredients,
+        recipeSteps: steps
+    };
+
+    console.log("Enviando datos al backend:", requestData);
+
+    // Llamada al API para crear la receta
+    fetch('https://localhost:7044/api/Recetas/CrearReceta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData),
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(data.Message);
+            location.reload(); // Recargar la página tras crear la receta
+        })
+        .catch(err => {
+            console.error(`Error al crear receta: ${err.message}`);
+            alert(`Error al crear receta: ${err.message}`);
+        });
 });
 
 // Función para cargar las recetas favoritas del usuario
 function cargarRecetasFavoritas() {
     fetch('https://localhost:7044/api/Recetas/ObtenerRecetasFavoritas?userId=1')
         .then(response => {
-            if (!response.ok) throw new Error("Error al obtener recetas favoritas");
+            if (!response.ok) {
+                throw new Error("Error al obtener recetas favoritas");
+            }
             return response.json();
         })
         .then(data => {
             const recipeCards = document.getElementById('recipeCards');
             recipeCards.innerHTML = '';
 
-            // Asegurarse de que la respuesta tiene la propiedad $values y es un array
-            if (!data || !data.$values || !Array.isArray(data.$values)) {
-                console.error("La respuesta no contiene datos válidos.");
-                return;
-            }
+            const recipes = data.$values || [];
 
-            const recipes = data.$values;
-
-            // Crear las cards para las recetas favoritas
             recipes.forEach(recipe => {
-                // Validar que recipe tenga las propiedades esperadas
-                if (!recipe || !recipe.recipeName || !recipe.categoryName) {
-                    console.warn("Receta incompleta omitida:", recipe);
-                    return;
-                }
-
                 const card = `
                     <div class="col-md-4 mb-4">
                         <div class="card">
@@ -82,11 +79,17 @@ function cargarRecetasFavoritas() {
                                 <p><strong>Categoría:</strong> ${recipe.categoryName || "Sin categoría"}</p>
                                 <p><strong>Ingredientes:</strong></p>
                                 <ul>
-                                    <li>${recipe.ingredientName || "Desconocido"}, ${recipe.ingredientQuantity || ""}</li>
+                                    ${recipe.ingredients
+                        ?.map(i => `<li>${i.name}, ${i.quantity}</li>`)
+                        .join("") || "<li>Sin ingredientes</li>"
+                    }
                                 </ul>
                                 <p><strong>Pasos:</strong></p>
                                 <ul>
-                                    <li>Paso ${recipe.stepNumber || ""}: ${recipe.stepDescription || "Sin descripción"}</li>
+                                    ${recipe.steps
+                        ?.map(s => `<li>Paso ${s.stepNumber}: ${s.description}</li>`)
+                        .join("") || "<li>Sin pasos</li>"
+                    }
                                 </ul>
                                 <div class="d-flex justify-content-between">
                                     <button class="btn btn-warning text-white btn-sm">Editar</button>
@@ -107,7 +110,10 @@ function cargarRecetasFavoritas() {
                 });
             });
         })
-        .catch(err => console.error('Error al cargar recetas favoritas:', err));
+        .catch(err => {
+            console.error('Error al cargar recetas favoritas:', err);
+            alert('Error al cargar recetas favoritas.');
+        });
 }
 
 // Manejador para eliminar una receta
@@ -118,18 +124,46 @@ function eliminarReceta(recipeId) {
         method: 'DELETE',
     })
         .then(response => {
-            if (!response.ok) return response.text().then(text => { throw new Error(text); });
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text);
+                });
+            }
             return response.json();
         })
         .then(data => {
             alert(data.Message);
 
             // Eliminar la card correspondiente en la interfaz
-            document.querySelector(`[data-recipe-id="${recipeId}"]`).closest('.col-md-4').remove();
+            const card = document.querySelector(`[data-recipe-id="${recipeId}"]`).closest('.col-md-4');
+            if (card) card.remove();
         })
-        .catch(err => alert(`Error al eliminar la receta: ${err.message}`));
+        .catch(err => {
+            console.error(`Error al eliminar la receta: ${err.message}`);
+            alert(`Error al eliminar la receta: ${err.message}`);
+        });
 }
 
+// Función para recolectar ingredientes desde inputs dinámicos
+function collectIngredients() {
+    const ingredients = [];
+    document.querySelectorAll(".ingredient-row").forEach(row => {
+        const name = row.querySelector(".ingredient-name").value.trim();
+        const quantity = row.querySelector(".ingredient-quantity").value.trim();
+        if (name && quantity) ingredients.push({ name, quantity });
+    });
+    return ingredients;
+}
+
+// Función para recolectar pasos desde inputs dinámicos
+function collectSteps() {
+    const steps = [];
+    document.querySelectorAll(".step-row").forEach((row, index) => {
+        const description = row.querySelector(".step-description").value.trim();
+        if (description) steps.push({ stepNumber: index + 1, description });
+    });
+    return steps;
+}
 
 // Cargar recetas favoritas al cargar la página
 document.addEventListener("DOMContentLoaded", cargarRecetasFavoritas);

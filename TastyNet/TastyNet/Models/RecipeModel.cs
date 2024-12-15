@@ -4,9 +4,10 @@
     {
         public long Id { get; set; }
         public string Name { get; set; }
-        public int CategoryId { get; set; }
-        public List<Ingredient> Ingredients { get; set; }
-        public List<RecipeStep> RecipeSteps { get; set; }
+        public long CategoryId { get; set; } 
+        public long UserId { get; set; } 
+        public List<Ingredient> Ingredients { get; set; } = new(); 
+        public List<RecipeStep> RecipeSteps { get; set; } = new(); 
     }
 
     public class Ingredient

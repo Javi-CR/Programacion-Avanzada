@@ -9,11 +9,12 @@ namespace TastyNetApi.Models
         public long CategoryId { get; set; }
         public long UserId { get; set; }
 
-        public Category? Category { get; set; }
-        
-        [JsonIgnore] // Evitar ciclos con Favorites -> Recipe
+        public Category? Category { get; set; } 
+
+        [JsonIgnore] 
         public ICollection<Favorite>? Favorites { get; set; }
-        public ICollection<Ingredient>? Ingredients { get; set; }
-        public ICollection<RecipeStep>? RecipeSteps { get; set; }
+        public List<Ingredient>? Ingredients { get; set; }
+        public List<RecipeStep>? RecipeSteps { get; set; } 
     }
 }
+
