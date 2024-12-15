@@ -4,109 +4,77 @@
 
 @section MainContent {
 
-    <div class="container">
-        <h2 class="text-center my-5">Your Favorite Recipes</h2>
-        <p class="text-center">Here is where your saved favorite recipes will appear.</p>
+        <div class="container">
+            <h2 class="text-center my-5">Your Favorite Recipes</h2>
+            <p class="text-center">Here is where your saved favorite recipes will appear.</p>
 
-        <!-- Botón Crear Receta -->
-        <div class="text-center mb-5">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRecipeModal">Crear Receta</button>
-        </div>
+            <!-- Botón Crear Receta -->
+            <div class="text-center mb-5">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRecipeModal">Crear Receta</button>
+            </div>
 
-        <!-- Modal para Crear Receta -->
-        <div class="modal fade" id="createRecipeModal" tabindex="-1" aria-labelledby="createRecipeModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="createRecipeModalLabel" style="color: #000;">Crear Receta</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="createRecipeForm">
-                            <div class="mb-3">
-                                <label for="recipeName" class="form-label" style="color: #000;">Nombre de la Receta</label>
-                                <input type="text" class="form-control" id="recipeName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="categoryId" class="form-label" style="color: #000;">Categoría</label>
-                                <select class="form-select" id="categoryId" required>
-                                    <option value="" selected disabled>Seleccione una categoría</option>
-                                    <option value="1">30-Minute Meals</option>
-                                    <option value="2">5 Ingredients or Less</option>
-                                    <option value="3">One-Pot Dishes</option>
-                                    <option value="4">Casseroles & Bakes</option>
-                                    <option value="5">Soups & Stews</option>
-                                    <option value="6">Family Favorites</option>
-                                    <option value="7">Italian</option>
-                                    <option value="8">Asian</option>
-                                    <option value="9">Mexican</option>
-                                    <option value="10">Cakes & Cupcakes</option>
-                                    <option value="11">Cookies & Bars</option>
-                                    <option value="12">Pies & Desserts</option>
-                                    <option value="13">Low-Carb</option>
-                                    <option value="14">Vegan & Vegetarian</option>
-                                    <option value="15">Gluten-Free</option>
-                                    <option value="16">Roasts & Grills</option>
-                                    <option value="17">Brunch Favorites</option>
-                                    <option value="18">Party Meals</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="ingredients" class="form-label" style="color: #000;">Ingredientes</label>
-                                <textarea class="form-control" id="ingredients" rows="3" placeholder="Ejemplo: Harina, 2 tazas; Huevos, 3"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="steps" class="form-label" style="color: #000;">Pasos</label>
-                                <textarea class="form-control" id="steps" rows="3" placeholder="Ejemplo: Mezclar los ingredientes; Hornear"></textarea>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" id="createRecipeButton">Crear</button>
+            <!-- Modal para Crear Receta -->
+            <div class="modal fade" id="createRecipeModal" tabindex="-1" aria-labelledby="createRecipeModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createRecipeModalLabel" style="color: #000;">Crear Receta</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="createRecipeForm">
+                                <div class="mb-3">
+                                    <label for="recipeName" class="form-label" style="color: #000;">Nombre de la Receta</label>
+                                    <input type="text" class="form-control" id="recipeName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="categoryId" class="form-label" style="color: #000;">Categoría</label>
+                                    <select class="form-select" id="categoryId" required>
+                                        <option value="" selected disabled>Seleccione una categoría</option>
+                                        <option value="1">30-Minute Meals</option>
+                                        <option value="2">5 Ingredients or Less</option>
+                                        <option value="3">One-Pot Dishes</option>
+                                        <option value="4">Casseroles & Bakes</option>
+                                        <option value="5">Soups & Stews</option>
+                                        <option value="6">Family Favorites</option>
+                                        <option value="7">Italian</option>
+                                        <option value="8">Asian</option>
+                                        <option value="9">Mexican</option>
+                                        <option value="10">Cakes & Cupcakes</option>
+                                        <option value="11">Cookies & Bars</option>
+                                        <option value="12">Pies & Desserts</option>
+                                        <option value="13">Low-Carb</option>
+                                        <option value="14">Vegan & Vegetarian</option>
+                                        <option value="15">Gluten-Free</option>
+                                        <option value="16">Roasts & Grills</option>
+                                        <option value="17">Brunch Favorites</option>
+                                        <option value="18">Party Meals</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="ingredients" class="form-label" style="color: #000;">Ingredientes</label>
+                                    <p class="text-muted">Escribe cada ingrediente seguido de una coma y su cantidad. Separa cada ingrediente con un punto y coma. <br /> Ejemplo: "Harina, 2 tazas; Azúcar, 1 taza".</p>
+                                    <textarea class="form-control" id="ingredients" rows="3" placeholder="Ejemplo: Harina, 2 tazas; Huevos, 3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="steps" class="form-label" style="color: #000;">Pasos</label>
+                                    <p class="text-muted">Escribe cada paso separado por un punto y coma. <br />  Ejemplo: "Mezclar los ingredientes; Hornear a 180 grados; Dejar enfriar".</p>
+                                    <textarea class="form-control" id="steps" rows="3" placeholder="Ejemplo: Mezclar los ingredientes; Hornear"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" id="createRecipeButton">Crear</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Contenedor para las recetas -->
-        <div class="row justify-content-center" id="recipeCards"></div>
-    </div>
+            <!-- Contenedor para las recetas -->
+                <div class="row justify-content-start" id="recipeCards"></div>
+
+        </div>
 }
 
-<!-- Script para manejar la creación de recetas -->
-<script>
-    document.getElementById('createRecipeButton').addEventListener('click', function () {
-        
-        const name = document.getElementById('recipeName').value;
-        const categoryId = document.getElementById('categoryId').value;
-        const ingredients = document.getElementById('ingredients').value
-            .split(';')
-            .map(item => {
-                const [name, quantity] = item.split(',');
-                return { Name: name.trim(), Quantity: quantity.trim() };
-            });
-        const steps = document.getElementById('steps').value
-            .split(';')
-            .map((desc, index) => ({ StepNumber: index + 1, Description: desc.trim() }));
-
-        if (!name || !categoryId || ingredients.length === 0 || steps.length === 0) {
-            alert("Por favor completa todos los campos.");
-            return;
-        }
-
-        
-        fetch('/Recetas/CrearReceta', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Name: name, CategoryId: categoryId, Ingredients: ingredients, Steps: steps })
-        })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.Message); 
-                location.reload(); 
-            })
-            .catch(err => alert('Error: ' + err));
-    });
-</script>
-
+<script src="/js/favorites.js"></script>

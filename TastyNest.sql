@@ -370,3 +370,120 @@ BEGIN
 END;
 GO
 
+-- (Agregado RicardoA 01/12)
+CREATE PROCEDURE InsertFavorite
+    @UserId BIGINT,
+    @RecipeId BIGINT
+AS
+BEGIN
+    INSERT INTO Favorites (UserId, RecipeId, CreatedFavorites)
+    VALUES (@UserId, @RecipeId, GETDATE());
+END;
+GO
+
+-- (Agregado RicardoA 01/12)
+CREATE PROCEDURE GetFavoriteRecipes
+    @UserId BIGINT
+AS
+BEGIN
+    SELECT 
+        r.Id AS RecipeId,
+        r.Name AS RecipeName,
+        c.Name AS CategoryName,
+        (SELECT STRING_AGG(i.Name + ':' + i.Quantity, '; ')
+         FROM Ingredients i
+         WHERE i.RecipeId = r.Id) AS Ingredients,
+        (SELECT STRING_AGG(CONVERT(VARCHAR, s.StepNumber) + ': ' + s.Description, '; ')
+         FROM RecipeSteps s
+         WHERE s.RecipeId = r.Id) AS Steps
+    FROM Favorites f
+    INNER JOIN Recipes r ON f.RecipeId = r.Id
+    INNER JOIN Categories c ON r.CategoryId = c.Id
+    WHERE f.UserId = @UserId
+    ORDER BY r.Id;
+END;
+GO
+
+
+USE TastyNest;
+GO
+
+EXEC GetFavoriteRecipes @UserId = 1;
+
+
+-- (Agregado RicardoA 01/12)
+CREATE PROCEDURE AgregarAFavoritos
+    @UserId BIGINT,
+    @RecipeId BIGINT
+AS
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM Favorites 
+        WHERE UserId = @UserId AND RecipeId = @RecipeId
+    )
+    BEGIN
+        INSERT INTO Favorites (UserId, RecipeId, CreatedFavorites)
+        VALUES (@UserId, @RecipeId, GETDATE());
+    END
+END;
+GO
+
+ALTER PROCEDURE GetFavoriteRecipes
+    @UserId BIGINT
+AS
+BEGIN
+    SELECT 
+        r.Id AS RecipeId,
+        r.Name AS RecipeName,
+        c.Name AS CategoryName,
+        i.Name AS IngredientName,
+        i.Quantity AS IngredientQuantity,
+        s.StepNumber AS StepNumber,
+        s.Description AS StepDescription
+    FROM Favorites f
+    INNER JOIN Recipes r ON f.RecipeId = r.Id
+    INNER JOIN Categories c ON r.CategoryId = c.Id
+    LEFT JOIN Ingredients i ON r.Id = i.RecipeId
+    LEFT JOIN RecipeSteps s ON r.Id = s.RecipeId
+    WHERE f.UserId = @UserId
+    ORDER BY r.Id, s.StepNumber;
+END;
+
+EXEC GetFavoriteRecipes @UserId = 1;
+
+-- (Agregado RicardoA 05/12)
+CREATE PROCEDURE DeleteRecipe
+    @RecipeId BIGINT
+AS
+BEGIN
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Eliminar los favoritos relacionados con la receta
+        DELETE FROM Favorites
+        WHERE RecipeId = @RecipeId;
+
+        -- Eliminar los pasos de la receta
+        DELETE FROM RecipeSteps
+        WHERE RecipeId = @RecipeId;
+
+        -- Eliminar los ingredientes de la receta
+        DELETE FROM Ingredients
+        WHERE RecipeId = @RecipeId;
+
+        -- Eliminar la receta
+        DELETE FROM Recipes
+        WHERE Id = @RecipeId;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
+
+
+
