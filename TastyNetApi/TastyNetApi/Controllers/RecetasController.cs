@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
+
 using TastyNetApi.Models;
+using TastyNetApi.Request;
 
 namespace TastyNetApi.Controllers
 {
@@ -17,7 +19,7 @@ namespace TastyNetApi.Controllers
         }
 
         [HttpPost("CrearReceta")]
-        public async Task<IActionResult> CrearReceta([FromBody] Recipe receta)
+        public async Task<IActionResult> CrearReceta([FromBody] RecipeRequest receta)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Datos inválidos");
