@@ -73,12 +73,14 @@ public IActionResult Register(Users model)
                 {
                    var datosContenido = JsonSerializer.Deserialize<Users>((JsonElement)result.Contenido!);
 
-                   HttpContext.Session.SetString("ConsecutivoUsuario", datosContenido!.Id.ToString());
-                   HttpContext.Session.SetString("NombreUsuario", datosContenido!.Name);
-                   HttpContext.Session.SetString("TokenUsuario", datosContenido!.Token);
-                   HttpContext.Session.SetString("RolUsuario", datosContenido!.RoleId.ToString());
+                    HttpContext.Session.SetString("UserConsecutive", datosContenido!.Id.ToString());
+                    HttpContext.Session.SetString("UserName", datosContenido!.Name);
+                    HttpContext.Session.SetString("UserEmail", datosContenido!.Email);
+                    HttpContext.Session.SetString("UserToken", datosContenido!.Token);
+                    HttpContext.Session.SetString("UserRole", datosContenido!.RoleId.ToString());
 
-                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Index", "Home");
                 }
                 else
                 {

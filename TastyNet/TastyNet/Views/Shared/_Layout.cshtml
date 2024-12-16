@@ -1,17 +1,17 @@
 ﻿@{
-    var nombreUsuario = "Invitado";
+    var nombreUsuario = "Guest";
 
     var rolUsuario = "0";
 
-    @if (Context.Session.GetString("NombreUsuario") != null)
+    @if (Context.Session.GetString("UserName") != null)
     {
-        nombreUsuario = @Context.Session.GetString("NombreUsuario");
+        nombreUsuario = @Context.Session.GetString("UserName");
     }
 
 
-    @if (Context.Session.GetString("RolUsuario") != null)
+    @if (Context.Session.GetString("UserRole") != null)
     {
-        rolUsuario = @Context.Session.GetString("RolUsuario");
+        rolUsuario = @Context.Session.GetString("UserRole");
     }
 
 }
@@ -75,13 +75,13 @@
                         <a href="#"><span>Recipes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
                         <ul>
 
-                            @if (Context.Session.GetString("RolUsuario") == "1")
+                            @if (Context.Session.GetString("UserRole") == "1")
                             {
                                 <!-- Opciones para Admin -->
                                 
                             }
 
-                            @if (Context.Session.GetString("RolUsuario") == "2")
+                            @if (Context.Session.GetString("UserRole") == "2")
                             {
                                 <!-- Opciones para Cliente -->
                                 <li class="dropdown">
@@ -143,7 +143,7 @@
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
-            @if (Context.Session.GetString("NombreUsuario") != null)
+            @if (Context.Session.GetString("UserName") != null)
             {
                 <!-- Opciones comunes para todos los usuarios autenticados -->
                 <li class="dropdown position-relative">
