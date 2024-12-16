@@ -50,24 +50,35 @@ namespace TastyNetApi.Controllers
         [Route("UpdateProfile")]
         public IActionResult UpdateProfile(Users model)
         {
-            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            var respuesta = new Respuesta();
+
+            try
             {
-                var respuesta = new Respuesta();
-                var result = context.Execute("UpdateProfile", new { model.Id, model.Name, model.Email, model.ProfilePicture });
-
-                if (result > 0)
+                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
-                    respuesta.Codigo = 0;
-                }
-                else
-                {
-                    respuesta.Codigo = -1;
-                    respuesta.Mensaje = "La información del producto no se ha actualizado correctamente";
-                }
+                    var result = context.Execute("UpdateProfile", new { model.Id, model.Name, model.Email, model.ProfilePicture });
 
-                return Ok(respuesta);
+                    if (result > 0)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Perfil actualizado correctamente.";
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "La información del perfil no se ha actualizado correctamente.";
+                    }
+                }
             }
+            catch (Exception ex)
+            {
+                respuesta.Codigo = -1;
+                respuesta.Mensaje = $"Error en la actualización: {ex.Message}";
+            }
+
+            return Ok(respuesta);
         }
+
 
 
     }

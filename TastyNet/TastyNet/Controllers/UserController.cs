@@ -47,11 +47,22 @@ namespace TastyNet.Controllers
         }
 
         [HttpPost]
-        public IActionResult EditProfile(IFormFile Imagen, Users model)
+        public async Task<IActionResult> EditProfile(IFormFile Imagen, Users model)
         {
+            var consecutivo = HttpContext.Session.GetString("UserConsecutive");
+
             var ext = string.Empty;
             var folder = string.Empty;
             model.ProfilePicture = string.Empty;
+
+            if (!string.IsNullOrEmpty(consecutivo))
+            {
+                model.Id = long.Parse(consecutivo);
+            }
+            else
+            {
+                return View();
+            }
 
             if (Imagen != null)
             {
@@ -66,33 +77,54 @@ namespace TastyNet.Controllers
                 }
             }
 
-            using (var client = _http.CreateClient())
+            try
             {
-                string url = _conf.GetSection("Variables:RutaApi").Value + "Profile/UpdateProfile";
-
-                JsonContent datos = JsonContent.Create(model);
-
-                var response = client.PostAsync(url, datos).Result;
-                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
-
-                if (result != null && result.Codigo == 0)
+                using (var client = _http.CreateClient())
                 {
-                    if (Imagen != null)
+                    string url = _conf.GetSection("Variables:RutaApi").Value + "Profile/UpdateProfile";
+
+                    // Serializar el modelo a JSON
+                    JsonContent datos = JsonContent.Create(model);
+
+                    // Hacer la solicitud HTTP asincrónicamente
+                    var response = await client.PostAsync(url, datos);
+
+                    // Verificar si la respuesta es exitosa
+                    if (response.IsSuccessStatusCode)
                     {
-                        string archivo = Path.Combine(folder, result.Mensaje + ext);
-                        using (Stream fs = new FileStream(archivo, FileMode.Create))
+                        var result = await response.Content.ReadFromJsonAsync<Respuesta>();
+
+                        if (result != null && result.Codigo == 0)
                         {
-                            Imagen.CopyTo(fs);
+                            if (Imagen != null)
+                            {
+                                string archivo = Path.Combine(folder, result.Mensaje + ext);
+                                using (Stream fs = new FileStream(archivo, FileMode.Create))
+                                {
+                                    Imagen.CopyTo(fs);
+                                }
+                            }
+
+                            return RedirectToAction("Profile", "User");
+                        }
+                        else
+                        {
+                            ViewBag.Mensaje = result?.Mensaje ?? "Error desconocido.";
+                            return View();
                         }
                     }
-
-                    return RedirectToAction("ConsultarProductos", "Producto");
+                    else
+                    {
+                        ViewBag.Mensaje = "Error al conectar con el servidor.";
+                        return View();
+                    }
                 }
-                else
-                {
-                    ViewBag.Mensaje = result!.Mensaje;
-                    return View();
-                }
+            }
+            catch (Exception ex)
+            {
+                // Captura excepciones relacionadas con la solicitud HTTP
+                ViewBag.Mensaje = $"Error en la solicitud: {ex.Message}";
+                return View();
             }
         }
 
