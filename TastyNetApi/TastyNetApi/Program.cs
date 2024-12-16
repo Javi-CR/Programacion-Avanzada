@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using TastyNetApi.Models;
 using Microsoft.EntityFrameworkCore;
+using TastyNetApi.Repositories;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +37,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
-
+builder.Services.AddScoped<CategoryRepository>(provider => new CategoryRepository(connectionString));
 
 var app = builder.Build();
 
