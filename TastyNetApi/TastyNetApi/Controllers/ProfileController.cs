@@ -24,7 +24,7 @@ namespace TastyNetApi.Controllers
 
         [HttpGet]
         [Route("CheckUser")]
-        public IActionResult ConsultarUsuario(long Consecutivo)
+        public IActionResult CheckUser(long Consecutivo)
         {
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
@@ -45,6 +45,41 @@ namespace TastyNetApi.Controllers
                 return Ok(respuesta);
             }
         }
+
+        [HttpPut]
+        [Route("UpdateProfile")]
+        public IActionResult UpdateProfile(Users model)
+        {
+            var respuesta = new Respuesta();
+
+            try
+            {
+                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                {
+                    var result = context.Execute("UpdateProfile", new { model.Id, model.Name, model.Email, model.ProfilePicture });
+
+                    if (result > 0)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Perfil actualizado correctamente.";
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "La información del perfil no se ha actualizado correctamente.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Codigo = -1;
+                respuesta.Mensaje = $"Error en la actualización: {ex.Message}";
+            }
+
+            return Ok(respuesta);
+        }
+
+
 
     }
 }
