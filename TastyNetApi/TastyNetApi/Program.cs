@@ -8,8 +8,6 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers().AddJsonOptions(x => { x.JsonSerializerOptions.PropertyNamingPolicy = null; });
 
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -36,7 +34,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
-builder.Services.AddScoped<CategoryRepository>(provider => new CategoryRepository(connectionString));
+
 
 var app = builder.Build();
 

@@ -7,24 +7,15 @@ namespace TastyNet.Controllers
 
         [HttpGet]
         [Route("Profile")]
-        public IActionResult Profile()
-        {
-            return View();
-        }
+        public IActionResult Profile() => View();
 
         [HttpGet]
         [Route("EditProfile")]
-        public IActionResult EditProfile()
-        {
-            return View();
-        }
+        public IActionResult EditProfile() => View();
 
         [HttpGet]
         [Route("ChangePassword")]
-        public IActionResult ChangePassword()
-        {
-            return View();
-        }
+        public IActionResult ChangePassword() => View();
 
 
     }
