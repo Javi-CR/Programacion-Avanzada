@@ -1,4 +1,23 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var nombreUsuario = "Guest";
+
+    var rolUsuario = "0";
+
+    @if (Context.Session.GetString("UserName") != null)
+    {
+        nombreUsuario = @Context.Session.GetString("UserName");
+    }
+
+
+    @if (Context.Session.GetString("UserRole") != null)
+    {
+        rolUsuario = @Context.Session.GetString("UserRole");
+    }
+
+}
+
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -55,87 +74,107 @@
                     <li class="dropdown">
                         <a href="#"><span>Recipes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
                         <ul>
-                            <li class="dropdown">
-                                <a href="#"><span>Quick & Easy</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("ThirtyMinuteMeals", "Recipes")">30-Minute Meals</a></li>
-                                    <li><a href="@Url.Action("FiveIngredientsOrLess", "Recipes")">5 Ingredients or Less</a></li>
-                                    <li><a href="@Url.Action("OnePotDishes", "Recipes")">One-Pot Dishes</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Comfort Food</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("CasserolesAndBakes", "Recipes")">Casseroles & Bakes</a></li>
-                                    <li><a href="@Url.Action("SoupsAndStews", "Recipes")">Soups & Stews</a></li>
-                                    <li><a href="@Url.Action("FamilyFavorites", "Recipes")">Family Favorites</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>World Flavors</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("Italian", "Recipes")">Italian</a></li>
-                                    <li><a href="@Url.Action("Asian", "Recipes")">Asian</a></li>
-                                    <li><a href="@Url.Action("Mexican", "Recipes")">Mexican</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Cakes & Cupcakes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("CakesAndCupcakes", "Recipes")">Cakes & Cupcakes</a></li>
-                                    <li><a href="@Url.Action("CookiesAndBars", "Recipes")">Cookies & Bars</a></li>
-                                    <li><a href="@Url.Action("PiesAndDesserts", "Recipes")">Pies & Desserts</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Healthy Choices</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("LowCarb", "Recipes")">Low-Carb</a></li>
-                                    <li><a href="@Url.Action("VeganAndVegetarian", "Recipes")">Vegan & Vegetarian</a></li>
-                                    <li><a href="@Url.Action("GlutenFree", "Recipes")">Gluten-Free</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Weekend Meals</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("RoastsAndGrills", "Recipes")">Roasts & Grills</a></li>
-                                    <li><a href="@Url.Action("BrunchFavorites", "Recipes")">Brunch Favorites</a></li>
-                                    <li><a href="@Url.Action("PartyPlates", "Recipes")">Party Plates</a></li>
-                                </ul>
-                            </li>
+
+                            @if (Context.Session.GetString("UserRole") == "1")
+                            {
+                                <!-- Opciones para Admin -->
+                                
+                            }
+
+                            @if (Context.Session.GetString("UserRole") == "2")
+                            {
+                                <!-- Opciones para Cliente -->
+                                <li class="dropdown">
+                                    <a href="#"><span>Quick & Easy</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("ThirtyMinuteMeals", "Recipes")">30-Minute Meals</a></li>
+                                        <li><a href="@Url.Action("FiveIngredientsOrLess", "Recipes")">5 Ingredients or Less</a></li>
+                                        <li><a href="@Url.Action("OnePotDishes", "Recipes")">One-Pot Dishes</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Comfort Food</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("CasserolesAndBakes", "Recipes")">Casseroles & Bakes</a></li>
+                                        <li><a href="@Url.Action("SoupsAndStews", "Recipes")">Soups & Stews</a></li>
+                                        <li><a href="@Url.Action("FamilyFavorites", "Recipes")">Family Favorites</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>World Flavors</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("Italian", "Recipes")">Italian</a></li>
+                                        <li><a href="@Url.Action("Asian", "Recipes")">Asian</a></li>
+                                        <li><a href="@Url.Action("Mexican", "Recipes")">Mexican</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Cakes & Cupcakes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("CakesAndCupcakes", "Recipes")">Cakes & Cupcakes</a></li>
+                                        <li><a href="@Url.Action("CookiesAndBars", "Recipes")">Cookies & Bars</a></li>
+                                        <li><a href="@Url.Action("PiesAndDesserts", "Recipes")">Pies & Desserts</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Healthy Choices</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("LowCarb", "Recipes")">Low-Carb</a></li>
+                                        <li><a href="@Url.Action("VeganAndVegetarian", "Recipes")">Vegan & Vegetarian</a></li>
+                                        <li><a href="@Url.Action("GlutenFree", "Recipes")">Gluten-Free</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Weekend Meals</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("RoastsAndGrills", "Recipes")">Roasts & Grills</a></li>
+                                        <li><a href="@Url.Action("BrunchFavorites", "Recipes")">Brunch Favorites</a></li>
+                                        <li><a href="@Url.Action("PartyPlates", "Recipes")">Party Plates</a></li>
+                                    </ul>
+                                </li>
+                            }
+
                         </ul>
                     </li>
                     <li><a href="@Url.Action("Favorites", "Home")">Favorites</a></li>
                     <li><a href="services.html">Services</a></li>
                     <li><a href="contact.html">Contact</a></li>
-                    <li><a href="@Url.Action("Profile", "User")">Profile</a></li>
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
-            <div class="header-social-links">
+            @if (Context.Session.GetString("UserName") != null)
+            {
+                <!-- Opciones comunes para todos los usuarios autenticados -->
+                <li class="dropdown position-relative">
+                    <a href="#" class="d-flex align-items-center dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span>@nombreUsuario</span>
+                        <i class="bi bi-chevron-down ms-2"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="@Url.Action("Profile", "User")">Profile</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("Logout", "Login")">Logout</a></li>
+                    </ul>
+                </li>
 
-                <a asp-area="" asp-controller="Login" asp-action="Login" class="active">Login<br></a>
-                <a asp-area="" asp-controller="Login" asp-action="Register" class="active">Register<br></a>
 
-            </div>
+
+            }
+            else
+            {
+                <div class="header-social-links">
+                    <ul class="d-flex align-items-center list-unstyled">
+                        <li><a href="@Url.Action("Login", "Login")" class="active">Login</a></li>
+                        <li class="ms-3"><a href="@Url.Action("Register", "Login")" class="active">Register</a></li>
+                    </ul>
+                </div>
+            }
+
 
         </div>
     </header>
 
-    <main class="main" class="pb-3">
-        @if (IsSectionDefined("MainContent"))
-        {
-            @RenderSection("MainContent", required: false)
-        }
-        else
-        {
-            <!-- Optional: Default content if no section is defined -->
-            <div class="container">
-                <h2 class="text-center my-5">Welcome to Tasty Nest!</h2>
-            </div>
-        }
-    </main>
+    <main role="main" class="pb-3">@RenderBody()</main>
 
 
     <footer id="footer" class="footer">

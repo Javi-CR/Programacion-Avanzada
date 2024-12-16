@@ -584,3 +584,30 @@ BEGIN
 END;
 GO
 
+
+
+-- PROFILE
+CREATE PROCEDURE [dbo].[CheckUserID]
+    @Id BIGINT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1 
+           [Id],
+           [IdentificationNumber],
+           [Name],
+           [Email],
+           [Password],
+           [Active],
+           [RoleId],
+           [UseTempPassword],
+           [Validity],
+           [CreatedUser],
+           [ProfilePicture]
+    FROM [TastyNest].[dbo].[Users]
+    WHERE [Id] = @Id;
+END
+GO
+
+
