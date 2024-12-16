@@ -12,6 +12,7 @@ using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using TastyNetApi.Request;
 
 namespace TastyNetApi.Controllers
 
@@ -19,12 +20,12 @@ namespace TastyNetApi.Controllers
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    public class LoginController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IConfiguration _conf;
         private readonly IHostEnvironment _env;
 
-        public LoginController(IConfiguration conf, IHostEnvironment env)
+        public UserController(IConfiguration conf, IHostEnvironment env)
         {
             _conf = conf;
             _env = env;
@@ -32,50 +33,93 @@ namespace TastyNetApi.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public IActionResult Register(Users model)
+        public IActionResult Register([FromBody] RegisterRequest model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                var respuesta = new Respuesta();
-                var result = context.Execute("CreateUser",
-                    new { model.IdentificationNumber, model.Name, model.Email, model.Password });
-
-                if (result > 0)
+                context.Open();
+                using (var transaction = context.BeginTransaction())
                 {
-                    respuesta.Codigo = 0;
-                }
-                else
-                {
-                    respuesta.Codigo = -1;
-                    respuesta.Mensaje = "Su información no se ha registrado correctamente";
-                }
+                    var respuesta = new Respuesta();
 
-                return Ok(respuesta);
+                    try
+                    {
+                        var encryptedPassword = Encrypt(model.Password);  
+                        var result = context.Execute("CreateUser",
+                            new
+                            {
+                                IdentificationNumber = model.IdentificationNumber.ToString(),
+                                model.Name,
+                                model.Email,
+                                Password = encryptedPassword
+                            }, transaction: transaction);
+
+                        if (result > 0)
+                        {                          
+                            transaction.Commit();
+                            respuesta.Codigo = 0;
+                            respuesta.Mensaje = "Su información se ha registrado correctamente";
+                        }
+                        else
+                        {
+                            transaction.Rollback();
+                            respuesta.Codigo = -1;
+                            respuesta.Mensaje = "Su información no se ha registrado correctamente (Usuario fallido)";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = $"Error: {ex.Message}";
+                    }
+
+                    return Ok(respuesta);
+                }
             }
         }
 
+
         [HttpPost]
         [Route("Login")]
-        public IActionResult Login(Users model)
+        public IActionResult Login([FromBody] LoginRequest model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new Respuesta();
-                var result =
-                    context.QueryFirstOrDefault<Users>("Login", new { model.Email, model.Password });
+                var result = context.QueryFirstOrDefault<Users>("Login", new { model.Email});
 
                 if (result != null)
                 {
-                    if (result.UsaTempPassword && result.Validity < DateTime.Now)
+                    string decryptedPassword = Decrypt(result.Password);
+                    if (decryptedPassword == model.Password)
                     {
-                        respuesta.Codigo = -1;
-                        respuesta.Mensaje = "Su información de acceso temporal ha expirado";
+                        if (result.UseTempPassword && result.Validity < DateTime.Now)
+                        {
+                            respuesta.Codigo = -1;
+                            respuesta.Mensaje = "Su información de acceso temporal ha expirado";
+                        }
+                        else
+                        {
+                            respuesta.Codigo = 0;
+                            respuesta.Mensaje = $"Bienvenido usuario, {result.Name}";
+                            respuesta.Contenido = result;
+                        }
                     }
                     else
                     {
-                        
-                        respuesta.Codigo = 0;
-                        respuesta.Contenido = result;
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "Contraseña incorrecta";
                     }
                 }
                 else

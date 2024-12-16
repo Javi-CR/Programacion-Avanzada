@@ -1,11 +1,14 @@
 ﻿using TastyNet.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TastyNet.Servicios
 {
     public interface IRecetaService
     {
-        Task<bool> CrearRecetaAsync(RecetaCreateModel receta);
+        Task<string> CrearRecetaAsync(Recipe receta);
+        Task<List<RecipeViewModel>> ObtenerRecetasFavoritasAsync(long userId);
+        Task<string> EliminarRecetaAsync(long recipeId);
+
     }
 }
-
-
