@@ -12,10 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Views\Shared\_LayoutDash.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+    <Folder Include="wwwroot\profile\" />
   </ItemGroup>
 
 </Project>

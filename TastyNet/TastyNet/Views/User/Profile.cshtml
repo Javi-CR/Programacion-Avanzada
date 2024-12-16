@@ -1,10 +1,23 @@
-﻿
+﻿@{
+    var nombreUsuario = "Guest";
+
+    var Correo = "...";
+
+    @if (Context.Session.GetString("UserName") != null)
+    {
+        nombreUsuario = @Context.Session.GetString("UserName");
+    }
+
+    @if (Context.Session.GetString("UserEmail") != null)
+    {
+        Correo = @Context.Session.GetString("UserEmail");
+    }
+
+}
+
 @{
     Layout = "~/Views/Shared/_LayoutDash.cshtml";
 }
-
-
-
 
 <!-- Page Title -->
 <div class="page-title" data-aos="fade">
@@ -31,7 +44,7 @@
                     </div>
         
                     <h1>My account</h1>
-                    <p class="mb-0">Username + Email</p>
+                    <p class="mb-0">@nombreUsuario (@Correo)</p>
 
                 </div>
             </div>

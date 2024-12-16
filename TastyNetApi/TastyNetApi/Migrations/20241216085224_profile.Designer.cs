@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TastyNetApi.Models;
 
@@ -11,9 +12,11 @@ using TastyNetApi.Models;
 namespace TastyNetApi.Migrations
 {
     [DbContext(typeof(TastyNestDbContext))]
-    partial class TastyNestDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241216085224_profile")]
+    partial class profile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

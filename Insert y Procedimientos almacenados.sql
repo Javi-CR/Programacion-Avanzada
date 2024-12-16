@@ -505,3 +505,127 @@ BEGIN
 END;
 GO
 
+-- Procedimiento para insertar una receta
+CREATE PROCEDURE InsertRecipe
+    @Name NVARCHAR(255),
+    @CategoryId BIGINT,
+    @UserId BIGINT,
+    @Ingredients NVARCHAR(MAX), 
+    @RecipeSteps NVARCHAR(MAX)  
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Insertar la receta en la tabla Recipes
+        DECLARE @RecipeId BIGINT;
+        INSERT INTO Recipes (Name, CategoryId, UserId, Image, CreatedRecipes)
+        VALUES (@Name, @CategoryId, @UserId, '', GETDATE());
+
+        -- Obtener el ID de la receta recién insertada
+        SET @RecipeId = SCOPE_IDENTITY();
+
+        -- Insertar ingredientes en la tabla Ingredients
+        IF (@Ingredients IS NOT NULL)
+        BEGIN
+            -- Se parsea el JSON de ingredientes
+            DECLARE @IngredientTable TABLE (
+                Name NVARCHAR(100),
+                Quantity NVARCHAR(100)
+            );
+
+            INSERT INTO @IngredientTable (Name, Quantity)
+            SELECT 
+                JSON_VALUE(Value, '$.Name') AS Name,
+                JSON_VALUE(Value, '$.Quantity') AS Quantity
+            FROM OPENJSON(@Ingredients);
+
+            -- Insertar los ingredientes en la tabla Ingredients
+            INSERT INTO Ingredients (RecipeId, Name, Quantity)
+            SELECT @RecipeId, Name, Quantity
+            FROM @IngredientTable;
+        END
+
+        -- Insertar pasos en la tabla RecipeSteps
+        IF (@RecipeSteps IS NOT NULL)
+        BEGIN
+            -- Se parsea el JSON de pasos de la receta
+            DECLARE @StepTable TABLE (
+                StepNumber INT,
+                Description NVARCHAR(500)
+            );
+
+            INSERT INTO @StepTable (StepNumber, Description)
+            SELECT 
+                JSON_VALUE(Value, '$.StepNumber') AS StepNumber,
+                JSON_VALUE(Value, '$.Description') AS Description
+            FROM OPENJSON(@RecipeSteps);
+
+            -- Insertar los pasos en la tabla RecipeSteps
+            INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
+            SELECT @RecipeId, StepNumber, Description
+            FROM @StepTable;
+        END
+
+        COMMIT TRANSACTION;
+
+        -- Devolver el ID de la receta insertada
+        SELECT @RecipeId AS RecipeId;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+
+        -- Lanzar el error capturado
+        THROW;
+    END CATCH
+END;
+GO
+
+
+
+-- PROFILE
+CREATE PROCEDURE [dbo].[CheckUserID]
+    @Id BIGINT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1 
+           [Id],
+           [IdentificationNumber],
+           [Name],
+           [Email],
+           [Password],
+           [Active],
+           [RoleId],
+           [UseTempPassword],
+           [Validity],
+           [CreatedUser],
+           [ProfilePicture]
+    FROM [TastyNest].[dbo].[Users]
+    WHERE [Id] = @Id;
+END
+GO
+
+
+CREATE PROCEDURE [dbo].[UpdateProfile]
+	@Id BIGINT,
+	@Name NVARCHAR(255),
+	@Email NVARCHAR(255),
+	@ProfilePicture NVARCHAR(255)
+AS
+BEGIN
+	-- Actualizar la información del usuario en la tabla Users
+	UPDATE dbo.Users
+	SET
+		Name = @Name,
+		Email = @Email,
+		ProfilePicture = @ProfilePicture
+	WHERE
+		Id = @Id;
+END
+GO
+
