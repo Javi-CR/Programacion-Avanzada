@@ -611,3 +611,21 @@ END
 GO
 
 
+CREATE PROCEDURE [dbo].[UpdateProfile]
+	@Id BIGINT,
+	@Name NVARCHAR(255),
+	@Email NVARCHAR(255),
+	@ProfilePicture NVARCHAR(255)
+AS
+BEGIN
+	-- Actualizar la información del usuario en la tabla Users
+	UPDATE dbo.Users
+	SET
+		Name = @Name,
+		Email = @Email,
+		ProfilePicture = @ProfilePicture
+	WHERE
+		Id = @Id;
+END
+GO
+

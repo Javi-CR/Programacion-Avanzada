@@ -34,12 +34,16 @@
 </div>
 <!-- End Page Title -->
 
+@if (ViewBag.Mensaje != null)
+{
+    <div class="alert alert-secondary text-center">@ViewBag.Mensaje</div>
+}
 
 <!-- Edit Section -->
 
 <section class="contact section">
     <!-- Form -->
-    <form method="post" asp-controller="User" asp-action="EditProfile" class="php-email-form" enctype="multipart/form-data" data-aos-delay="300">
+    <form form method="post" asp-controller="User" asp-action="EditProfile" class="php-email-form" enctype="multipart/form-data">
 
         <div class="row gy-4 d-flex justify-content-center">
             <div class="col-md-8">
@@ -55,7 +59,7 @@
             </div>
 
             <div class="col-md-8">
-                <input type="file" id="ProfilePicture" name="ProfilePicture" accept="image/*" class="form-control" />
+                <input type="file" id="Imagen" name="Imagen" accept="image/png" class="form-control" />
             </div>
 
             <div class="col-md-12 text-center">

@@ -10,12 +10,14 @@ namespace TastyNet.Controllers
     {
         private readonly IHttpClientFactory _http;
         private readonly IConfiguration _conf;
+        private readonly IHostEnvironment _env;
 
-        public UserController(IHttpClientFactory http, IConfiguration conf)
+        public UserController(IHttpClientFactory http, IConfiguration conf, IHostEnvironment env)
         {
             _http = http;
             _conf = conf;
-      
+            _env = env;
+
         }
 
         [HttpGet]
@@ -23,7 +25,6 @@ namespace TastyNet.Controllers
         public IActionResult Profile() => View();
 
         [HttpGet]
-        [Route("EditProfile")]
         public IActionResult EditProfile()
         
         {
@@ -46,9 +47,53 @@ namespace TastyNet.Controllers
         }
 
         [HttpPost]
-        public IActionResult EditProfile(Users model)
+        public IActionResult EditProfile(IFormFile Imagen, Users model)
         {
-            return View();
+            var ext = string.Empty;
+            var folder = string.Empty;
+            model.ProfilePicture = string.Empty;
+
+            if (Imagen != null)
+            {
+                ext = Path.GetExtension(Path.GetFileName(Imagen.FileName));
+                folder = Path.Combine(_env.ContentRootPath, "wwwroot\\profile");
+                model.ProfilePicture = "/products/";
+
+                if (ext.ToLower() != ".png")
+                {
+                    ViewBag.Mensaje = "La imagen debe ser .png";
+                    return View();
+                }
+            }
+
+            using (var client = _http.CreateClient())
+            {
+                string url = _conf.GetSection("Variables:RutaApi").Value + "Profile/UpdateProfile";
+
+                JsonContent datos = JsonContent.Create(model);
+
+                var response = client.PostAsync(url, datos).Result;
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                if (result != null && result.Codigo == 0)
+                {
+                    if (Imagen != null)
+                    {
+                        string archivo = Path.Combine(folder, result.Mensaje + ext);
+                        using (Stream fs = new FileStream(archivo, FileMode.Create))
+                        {
+                            Imagen.CopyTo(fs);
+                        }
+                    }
+
+                    return RedirectToAction("ConsultarProductos", "Producto");
+                }
+                else
+                {
+                    ViewBag.Mensaje = result!.Mensaje;
+                    return View();
+                }
+            }
         }
 
 
