@@ -6,7 +6,7 @@ GO
 
 -- Roles
 CREATE TABLE Roles (
-    Id TINYINT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    Id SMALLINT PRIMARY KEY IDENTITY(1,1) NOT NULL,
     RolName NVARCHAR(50) NOT NULL UNIQUE
 );
 GO
@@ -18,20 +18,17 @@ CREATE TABLE Users (
     Name NVARCHAR(255) NOT NULL,
     Email NVARCHAR(100) NOT NULL UNIQUE,
     Password NVARCHAR(MAX) NOT NULL,
-    -- PlaintextPassword [varchar](255) NOT NULL,  NO SE SI ESTO ES SEGURO DE QUE EXISTA
     Active BIT NOT NULL, 
-    RoleId TINYINT NOT NULL,
+    RoleId SMALLINT NOT NULL,
     UseTempPassword BIT NOT NULL, 
     Validity DATETIME NOT NULL, 
     CreatedUser DATETIME2 NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (RoleId) REFERENCES Roles(Id) ON DELETE CASCADE
 );
 GO
-
 -- Categorias
 CREATE TABLE Categories (
     Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    ParentId BIGINT NULL,
     Name NVARCHAR(50) NOT NULL UNIQUE
 );
 GO
@@ -79,6 +76,10 @@ CREATE TABLE Favorites (
     CONSTRAINT FK_Favorites_Users FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE,
     CONSTRAINT FK_Favorites_Recipes FOREIGN KEY (RecipeId) REFERENCES Recipes(Id) ON DELETE NO ACTION
 );
+GO
+
+
+USE TastyNest
 GO
 
 -- Cambios RicardoA
@@ -393,8 +394,7 @@ GO
 -- al parecer hay algun tipo de conflicto con la parametrizacion de datos los BIT
 -- que no permite hacerlo en un query comun y corriente esta es la unica soloucion a la que logre llegar
 -- si encuentran otra perfecto.
-USE TastyNest
-GO
+
 
 CREATE PROCEDURE [dbo].[CreateUser]
     @IdentificationNumber NVARCHAR(20),
@@ -403,69 +403,78 @@ CREATE PROCEDURE [dbo].[CreateUser]
     @Password NVARCHAR(255) 
 AS
 BEGIN
-    SET NOCOUNT ON;
 
     DECLARE @EstadoActivo BIT = 1;
-    DECLARE @RolUsuario TINYINT;
+    DECLARE @RolUsuario SMALLINT = 2;
     DECLARE @UsaClaveTemp BIT = 0;
 
-    SELECT @RolUsuario = Id
-    FROM dbo.Roles
-    WHERE RolName = 'Clientes';
-
-    IF NOT EXISTS (
+    IF EXISTS (
         SELECT 1
         FROM dbo.Users
         WHERE IdentificationNumber = @IdentificationNumber
            OR Email = @Email
     )
     BEGIN
-        -- Insertar el nuevo usuario
-        INSERT INTO dbo.Users (IdentificationNumber, Name, Email, Password, Active, RoleId, UseTempPassword, Validity)
-        VALUES (@IdentificationNumber, @Name, @Email, @Password, @EstadoActivo, @RolUsuario, @UsaClaveTemp, GETDATE());
+        PRINT 'Ya existe un usuario con el mismo número de identificación o correo electrónico.';
+        RETURN; 
     END
+
+    BEGIN
+        INSERT INTO dbo.Users (IdentificationNumber, Name, Email, Password, Active, RoleId, UseTempPassword, Validity)
+        VALUES (@IdentificationNumber, @Name, @Email, @Password, @EstadoActivo, @RolUsuario, @UsaClaveTemp, GETDATE() + 365);
+
+        PRINT 'Usuario creado exitosamente.';
+    END
+
 END;
 GO
 
+
+--CREATE PROCEDURE [dbo].[Login]
+--	@Email NVARCHAR(80),
+--	@Password NVARCHAR(255)
+--AS
+--BEGIN
+	
+--	SELECT	U.Id,
+--			IdentificationNumber,
+--			Name,
+--			Email,
+--			Active,
+--			RoleId,
+--			R.RolName,
+--			UseTempPassword,
+--			Validity 
+--	  FROM	dbo.Users U
+--	  INNER JOIN dbo.Roles R ON U.RoleId = R.Id 
+--	  WHERE	Email = @Email
+--		AND Password = @Password
+--		AND Active = 1
+
+--END;
+--GO
 
 CREATE PROCEDURE [dbo].[Login]
-	@Email NVARCHAR(80),
-	@Password NVARCHAR(255)
+    @Email NVARCHAR(80)
 AS
 BEGIN
-	
-	SELECT	U.Id,
-			IdentificationNumber,
-			Name,
-			Email,
-			Active,
-			RoleId,
-			R.RolName,
-			UseTempPassword,
-			Validity 
-	  FROM	dbo.Users U
-	  INNER JOIN dbo.Roles R ON U.RoleId = R.Id 
-	  WHERE	Email = @Email
-		AND Password = @Password
-		AND Active = 1
-
+    SELECT  U.Id,
+            IdentificationNumber,
+            Name,
+            Email,
+			Password,
+            Active,
+            RoleId,
+            R.RolName,
+            UseTempPassword,
+            Validity 
+    FROM    dbo.Users U
+    INNER JOIN dbo.Roles R ON U.RoleId = R.Id 
+    WHERE   Email = @Email
+        AND Active = 1;
 END;
 GO
 
-
-CREATE PROCEDURE GetCategoriesWithSubcategories
-AS
-BEGIN
-    SELECT 
-        C.Id AS CategoryId,
-        C.Name AS CategoryName,
-        SC.Id AS SubcategoryId,
-        SC.Name AS SubcategoryName
-    FROM Categories C
-    LEFT JOIN Categories SC ON SC.ParentId = C.Id
-    WHERE C.ParentId IS NULL;
-END;
-GO
 
 -- (Agregado RicardoA 01/12)
 CREATE PROCEDURE InsertFavorite
