@@ -21,6 +21,8 @@ namespace TastyNetApi.Models
         [MaxLength(255)]
         public string Name { get; set; } = string.Empty;
 
+        public string? ProfilePicture { get; set; } = string.Empty;
+
         [Required]
         [MaxLength(100)]
         public string Email { get; set; } = string.Empty;
