@@ -111,7 +111,10 @@ namespace TastyNetApi.Controllers
                         }
                         else
                         {
+
+
                             respuesta.Codigo = 0;
+                            result.Token = GenerarToken(result);
                             respuesta.Mensaje = $"Bienvenido usuario, {result.Name}";
                             respuesta.Contenido = result;
                         }
@@ -161,6 +164,27 @@ namespace TastyNetApi.Controllers
 
             return Convert.ToBase64String(array);
         }
+
+        private string GenerarToken(Users model)
+        {
+            string SecretKey = _conf.GetSection("Variables:Llave").Value!;
+
+            List<Claim> claims = new List<Claim>();
+            claims.Add(new Claim("IdUsuario", model.Id.ToString()));
+            claims.Add(new Claim("IdRol", model.RoleId.ToString()));
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
+            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(20),
+                signingCredentials: cred);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
 
         private string Decrypt(string texto)
         {
