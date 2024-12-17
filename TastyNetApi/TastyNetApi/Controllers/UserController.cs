@@ -231,7 +231,7 @@ namespace TastyNetApi.Controllers
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(20),
+                expires: DateTime.UtcNow.AddMinutes(60),
                 signingCredentials: cred);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
