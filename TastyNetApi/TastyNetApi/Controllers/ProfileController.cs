@@ -134,5 +134,53 @@ namespace TastyNetApi.Controllers
 
             return Ok(respuesta);
         }
+
+
+        [HttpGet]
+        [Route("GetFavoriteRecipes/{userId}")]
+        public IActionResult GetFavoriteRecipes(long userId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var respuesta = new Respuesta();
+            try
+            {
+                using (var connection = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                {
+                    connection.Open();
+
+                    // Execute the stored procedure and retrieve the data
+                    var favoriteRecipes = connection.Query<FavoriteRecipeResponse>(
+                        "GetFavoriteRecipes",
+                        new { UserId = userId },
+                        commandType: CommandType.StoredProcedure
+                    ).ToList();
+
+                    if (favoriteRecipes.Any())
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Contenido = favoriteRecipes;
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "No se encontraron recetas favoritas para este usuario.";
+                    }
+
+                    return Ok(respuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Codigo = -1;
+                respuesta.Mensaje = $"Error al obtener las recetas favoritas: {ex.Message}";
+                return BadRequest(respuesta);
+            }
+        }
+
+
     }
 }
