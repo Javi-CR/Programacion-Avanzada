@@ -9,7 +9,7 @@ using TastyNetApi.Request;
 
 namespace TastyNetApi.Controllers
 {
-
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProfileController : ControllerBase
