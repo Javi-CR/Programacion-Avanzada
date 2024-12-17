@@ -519,15 +519,12 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Insertar la receta en la tabla Recipes
         DECLARE @RecipeId BIGINT;
         INSERT INTO Recipes (Name, CategoryId, UserId, Image, CreatedRecipes)
         VALUES (@Name, @CategoryId, @UserId, '', GETDATE());
 
-        -- Obtener el ID de la receta recién insertada
         SET @RecipeId = SCOPE_IDENTITY();
 
-        -- Insertar ingredientes en la tabla Ingredients
         IF (@Ingredients IS NOT NULL)
         BEGIN
             -- Se parsea el JSON de ingredientes
@@ -612,20 +609,41 @@ GO
 
 
 CREATE PROCEDURE [dbo].[UpdateProfile]
-	@Id BIGINT,
-	@Name NVARCHAR(255),
-	@Email NVARCHAR(255),
-	@ProfilePicture NVARCHAR(255)
+    @Id BIGINT,
+    @Name NVARCHAR(255),
+    @Email NVARCHAR(255),
+    @ProfilePicture NVARCHAR(255),
+    @Changes NVARCHAR(MAX) OUTPUT 
 AS
 BEGIN
-	-- Actualizar la información del usuario en la tabla Users
-	UPDATE dbo.Users
-	SET
-		Name = @Name,
-		Email = @Email,
-		ProfilePicture = @ProfilePicture
-	WHERE
-		Id = @Id;
+    DECLARE @CurrentName NVARCHAR(255);
+    DECLARE @CurrentEmail NVARCHAR(255);
+    DECLARE @CurrentProfilePicture NVARCHAR(255);
+    DECLARE @ChangesLog NVARCHAR(MAX);
+
+    SELECT 
+        @CurrentName = Name,
+        @CurrentEmail = Email,
+        @CurrentProfilePicture = ProfilePicture
+    FROM dbo.Users
+    WHERE Id = @Id;
+
+    UPDATE dbo.Users
+    SET 
+        Name = CASE WHEN @Name IS NOT NULL AND @Name <> @CurrentName THEN @Name ELSE Name END,
+        Email = CASE WHEN @Email IS NOT NULL AND @Email <> @CurrentEmail THEN @Email ELSE Email END,
+        ProfilePicture = CASE WHEN @ProfilePicture IS NOT NULL THEN @ProfilePicture ELSE ISNULL(ProfilePicture, '') END
+    WHERE Id = @Id;
+
+    SET @Changes = 
+        CASE 
+            WHEN @Name IS NOT NULL AND @Name <> @CurrentName THEN 'Name changed'
+            WHEN @Email IS NOT NULL AND @Email <> @CurrentEmail THEN 'Email changed'
+            WHEN @ProfilePicture IS NOT NULL AND @ProfilePicture <> @CurrentProfilePicture THEN 'ProfilePicture changed'
+            ELSE 'No changes'
+        END;
 END
 GO
+
+
 
