@@ -79,65 +79,66 @@
                     @if (Context.Session.GetString("UserRole") == "2")
                     {
                         <!-- Opciones para cliente -->
+                        <li class="dropdown">
+                            <a href="#"><span>Recipes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                            <ul>
+
+                                <li class="dropdown">
+                                    <a href="#"><span>Quick & Easy</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("ThirtyMinuteMeals", "Recipes")">30-Minute Meals</a></li>
+                                        <li><a href="@Url.Action("FiveIngredientsOrLess", "Recipes")">5 Ingredients or Less</a></li>
+                                        <li><a href="@Url.Action("OnePotDishes", "Recipes")">One-Pot Dishes</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Comfort Food</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("CasserolesAndBakes", "Recipes")">Casseroles & Bakes</a></li>
+                                        <li><a href="@Url.Action("SoupsAndStews", "Recipes")">Soups & Stews</a></li>
+                                        <li><a href="@Url.Action("FamilyFavorites", "Recipes")">Family Favorites</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>World Flavors</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("Italian", "Recipes")">Italian</a></li>
+                                        <li><a href="@Url.Action("Asian", "Recipes")">Asian</a></li>
+                                        <li><a href="@Url.Action("Mexican", "Recipes")">Mexican</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Cakes & Cupcakes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("CakesAndCupcakes", "Recipes")">Cakes & Cupcakes</a></li>
+                                        <li><a href="@Url.Action("CookiesAndBars", "Recipes")">Cookies & Bars</a></li>
+                                        <li><a href="@Url.Action("PiesAndDesserts", "Recipes")">Pies & Desserts</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Healthy Choices</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("LowCarb", "Recipes")">Low-Carb</a></li>
+                                        <li><a href="@Url.Action("VeganAndVegetarian", "Recipes")">Vegan & Vegetarian</a></li>
+                                        <li><a href="@Url.Action("GlutenFree", "Recipes")">Gluten-Free</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Weekend Meals</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                    <ul>
+                                        <li><a href="@Url.Action("RoastsAndGrills", "Recipes")">Roasts & Grills</a></li>
+                                        <li><a href="@Url.Action("BrunchFavorites", "Recipes")">Brunch Favorites</a></li>
+                                        <li><a href="@Url.Action("PartyPlates", "Recipes")">Party Plates</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li><a href="@Url.Action("Favorites", "Home")">Favorites</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="contact.html">Contact</a></li>
                     }
 
-                    <li class="dropdown">
-                        <a href="#"><span>Recipes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                        <ul>
-
-                            <li class="dropdown">
-                                <a href="#"><span>Quick & Easy</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("ThirtyMinuteMeals", "Recipes")">30-Minute Meals</a></li>
-                                    <li><a href="@Url.Action("FiveIngredientsOrLess", "Recipes")">5 Ingredients or Less</a></li>
-                                    <li><a href="@Url.Action("OnePotDishes", "Recipes")">One-Pot Dishes</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Comfort Food</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("CasserolesAndBakes", "Recipes")">Casseroles & Bakes</a></li>
-                                    <li><a href="@Url.Action("SoupsAndStews", "Recipes")">Soups & Stews</a></li>
-                                    <li><a href="@Url.Action("FamilyFavorites", "Recipes")">Family Favorites</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>World Flavors</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("Italian", "Recipes")">Italian</a></li>
-                                    <li><a href="@Url.Action("Asian", "Recipes")">Asian</a></li>
-                                    <li><a href="@Url.Action("Mexican", "Recipes")">Mexican</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Cakes & Cupcakes</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("CakesAndCupcakes", "Recipes")">Cakes & Cupcakes</a></li>
-                                    <li><a href="@Url.Action("CookiesAndBars", "Recipes")">Cookies & Bars</a></li>
-                                    <li><a href="@Url.Action("PiesAndDesserts", "Recipes")">Pies & Desserts</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Healthy Choices</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("LowCarb", "Recipes")">Low-Carb</a></li>
-                                    <li><a href="@Url.Action("VeganAndVegetarian", "Recipes")">Vegan & Vegetarian</a></li>
-                                    <li><a href="@Url.Action("GlutenFree", "Recipes")">Gluten-Free</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#"><span>Weekend Meals</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="@Url.Action("RoastsAndGrills", "Recipes")">Roasts & Grills</a></li>
-                                    <li><a href="@Url.Action("BrunchFavorites", "Recipes")">Brunch Favorites</a></li>
-                                    <li><a href="@Url.Action("PartyPlates", "Recipes")">Party Plates</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li><a href="@Url.Action("Favorites", "Home")">Favorites</a></li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    
              
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
