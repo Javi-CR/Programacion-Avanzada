@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using TastyNet.Models;
+using TastyNet.Servicios;
 using static System.Net.WebRequestMethods;
 
 namespace TastyNet.Controllers
@@ -17,12 +18,63 @@ namespace TastyNet.Controllers
             _http = http;
             _conf = conf;
             _env = env;
-
         }
 
         [HttpGet]
         [Route("Profile")]
-        public IActionResult Profile() => View();
+        public IActionResult Profile()
+        {
+            // Obtener el consecutivo del usuario desde la sesión
+            var consecutivo = HttpContext.Session.GetString("UserConsecutive");
+
+            if (string.IsNullOrEmpty(consecutivo))
+            {
+                return RedirectToAction("Login", "Login");
+            }
+
+            try
+            {
+                using (var client = _http.CreateClient())
+                {
+                    // Llamar a la API para obtener las recetas favoritas del usuario
+                    string url = _conf.GetSection("Variables:RutaApi").Value + "Profile/GetFavoriteRecipes/" + consecutivo;
+
+                    var response = client.GetAsync(url).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                        if (result != null && result.Codigo == 0)
+                        {
+                            var favoriteRecipes = JsonSerializer.Deserialize<List<FavoriteRecipeResponse>>(result.Contenido.ToString());
+                            ViewBag.FavoriteRecipes = favoriteRecipes;
+                            return View();
+                        }
+                        else
+                        {
+                            ViewBag.Mensaje = result?.Mensaje ?? "No se encontraron recetas favoritas.";
+                          
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.Mensaje = "Error al obtener las recetas favoritas desde el servidor.";
+                    
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Mensaje = $"Error en la solicitud: {ex.Message}";
+            }
+
+            // Retornar la vista con los datos del usuario
+            return View();
+        }
+
+
+
 
         [HttpGet]
         public IActionResult EditProfile()
@@ -132,6 +184,9 @@ namespace TastyNet.Controllers
         [HttpGet]
         [Route("ChangePassword")]
         public IActionResult ChangePassword() => View();
+
+
+        
 
 
     }
