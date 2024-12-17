@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System.Data;
 using TastyNetApi.Models;
+using TastyNetApi.Request;
 
 namespace TastyNetApi.Controllers
 {
@@ -26,6 +28,11 @@ namespace TastyNetApi.Controllers
         [Route("CheckUser")]
         public IActionResult CheckUser(long Consecutivo)
         {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new Respuesta();
@@ -46,27 +53,76 @@ namespace TastyNetApi.Controllers
             }
         }
 
+
         [HttpPut]
         [Route("UpdateProfile")]
-        public IActionResult UpdateProfile(Users model)
+        public IActionResult UpdateProfile(ProfileRequest model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!string.IsNullOrEmpty(model.ProfilePicture))
+            {
+                if (!model.ProfilePicture.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
+                    !model.ProfilePicture.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                {
+                    ModelState.AddModelError("ProfilePicture", "Solo se permiten imágenes con extensiones .JPG o .PNG.");
+                    return BadRequest(ModelState);
+                }
+            }
+
             var respuesta = new Respuesta();
 
             try
             {
-                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                using (var connection = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
-                    var result = context.Execute("UpdateProfile", new { model.Id, model.Name, model.Email, model.ProfilePicture });
+                    connection.Open();
 
-                    if (result > 0)
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        respuesta.Codigo = 0;
-                        respuesta.Mensaje = "Perfil actualizado correctamente.";
-                    }
-                    else
-                    {
-                        respuesta.Codigo = -1;
-                        respuesta.Mensaje = "La información del perfil no se ha actualizado correctamente.";
+                        try
+                        {
+                            var parameters = new DynamicParameters();
+                            parameters.Add("@Id", model.Id);
+                            parameters.Add("@Name", model.Name);
+                            parameters.Add("@Email", model.Email);
+                            parameters.Add("@ProfilePicture", model.ProfilePicture);
+                            parameters.Add("@Changes", dbType: DbType.String, size: -1, direction: ParameterDirection.Output);
+
+                            var result = connection.Execute(
+                                "UpdateProfile",
+                                parameters,
+                                transaction: transaction,
+                                commandType: System.Data.CommandType.StoredProcedure
+                            );
+
+                            var changesLog = parameters.Get<string>("@Changes");
+
+                            if (result > 0)
+                            {
+                                transaction.Commit();
+
+                                respuesta.Codigo = 0;
+                                respuesta.Mensaje = $"Perfil actualizado correctamente. {changesLog}";
+                                respuesta.Contenido = $"Updated as: {changesLog}"; 
+
+                                return Ok(respuesta);
+                            }
+                            else
+                            {
+                                transaction.Rollback();
+                                respuesta.Codigo = -1;
+                                respuesta.Mensaje = "La información del perfil no se ha actualizado correctamente.";
+                            }
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw; 
+                        }
                     }
                 }
             }
@@ -78,8 +134,5 @@ namespace TastyNetApi.Controllers
 
             return Ok(respuesta);
         }
-
-
-
     }
 }

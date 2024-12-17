@@ -14,7 +14,8 @@ namespace TastyNetApi.Request
 
         [Required]
         [EmailAddress(ErrorMessage = "Invalid Email Address.")]
-        public string Email { get; set; }
+        [MaxLength(100)]
+        public string Email { get; set; } = string.Empty;
 
         [Required]
         [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres.")]

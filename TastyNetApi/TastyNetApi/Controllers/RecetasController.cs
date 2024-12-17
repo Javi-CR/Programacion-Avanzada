@@ -22,7 +22,9 @@ namespace TastyNetApi.Controllers
         public async Task<IActionResult> CrearReceta([FromBody] RecipeRequest receta)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Datos inválidos");
+            {
+                return BadRequest(ModelState);
+            }
 
             var connectionString = _configuration.GetConnectionString("DefaultConnection");
             using var connection = new SqlConnection(connectionString);
