@@ -3,7 +3,6 @@ using TastyNet.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TastyNet.Services;
 
 namespace TastyNet.Controllers;
 
@@ -31,7 +30,7 @@ public IActionResult Register(Users model)
 {
     using (var client = _http.CreateClient())
     {
-        string url = _conf.GetSection("Variables:RutaApi").Value + "Login/Register";
+        string url = _conf.GetSection("Variables:RutaApi").Value + "User/Register";
 
         model.Password = _comunes.Encrypt(model.Password);
         JsonContent datos = JsonContent.Create(model);
@@ -62,7 +61,7 @@ public IActionResult Register(Users model)
         {
             using (var client = _http.CreateClient())
             {
-                string url = _conf.GetSection("Variables:RutaApi").Value + "Login/Login";
+                string url = _conf.GetSection("Variables:RutaApi").Value + "User/Login";
 
                 model.Password = _comunes.Encrypt(model.Password);
                 JsonContent datos = JsonContent.Create(model);
@@ -72,14 +71,16 @@ public IActionResult Register(Users model)
 
                 if (result != null && result.Codigo == 0)
                 {
-                    var datosContenido = JsonSerializer.Deserialize<Users>((JsonElement)result.Contenido!);
+                   var datosContenido = JsonSerializer.Deserialize<Users>((JsonElement)result.Contenido!);
 
-                   // HttpContext.Session.SetString("ConsecutivoUsuario", datosContenido!.Consecutivo.ToString());
-                   // HttpContext.Session.SetString("NombreUsuario", datosContenido!.Nombre);
-                   // HttpContext.Session.SetString("TokenUsuario", datosContenido!.Token);
-                   // HttpContext.Session.SetString("RolUsuario", datosContenido!.ConsecutivoRol.ToString());
+                    HttpContext.Session.SetString("UserConsecutive", datosContenido!.Id.ToString());
+                    HttpContext.Session.SetString("UserName", datosContenido!.Name);
+                    HttpContext.Session.SetString("UserEmail", datosContenido!.Email);
+                    HttpContext.Session.SetString("UserToken", datosContenido!.Token);
+                    HttpContext.Session.SetString("UserRole", datosContenido!.RoleId.ToString());
 
-                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Index", "Home");
                 }
                 else
                 {
@@ -88,4 +89,12 @@ public IActionResult Register(Users model)
                 }
             }
         }
+
+
+    [HttpGet]
+    public IActionResult Logout()
+    {
+        HttpContext.Session.Clear();
+        return RedirectToAction("Index", "Home");
+    }
 }

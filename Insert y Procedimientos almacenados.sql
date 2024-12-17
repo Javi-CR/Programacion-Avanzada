@@ -1,84 +1,3 @@
-CREATE DATABASE TastyNest;
-GO
-
-USE TastyNest;
-GO
-
--- Roles
-CREATE TABLE Roles (
-    Id SMALLINT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-    RolName NVARCHAR(50) NOT NULL UNIQUE
-);
-GO
-
--- Usuarios
-CREATE TABLE Users (
-    Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    IdentificationNumber NVARCHAR(20) NOT NULL, 
-    Name NVARCHAR(255) NOT NULL,
-    Email NVARCHAR(100) NOT NULL UNIQUE,
-    Password NVARCHAR(MAX) NOT NULL,
-    Active BIT NOT NULL, 
-    RoleId SMALLINT NOT NULL,
-    UseTempPassword BIT NOT NULL, 
-    Validity DATETIME NOT NULL, 
-    CreatedUser DATETIME2 NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (RoleId) REFERENCES Roles(Id) ON DELETE CASCADE
-);
-GO
--- Categorias
-CREATE TABLE Categories (
-    Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    Name NVARCHAR(50) NOT NULL UNIQUE
-);
-GO
-
--- Recetas
-CREATE TABLE Recipes (
-    Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    UserId BIGINT NOT NULL, 
-    CategoryId BIGINT NOT NULL,
-    Name NVARCHAR(100) NOT NULL,
-    Description NVARCHAR(2000), 
-    Image NVARCHAR(255),
-    CreatedRecipes DATETIME2 NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE,
-    FOREIGN KEY (CategoryId) REFERENCES Categories(Id) 
-);
-GO
-
--- Ingredientes
-CREATE TABLE Ingredients (
-    Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    RecipeId BIGINT NOT NULL,
-    Name NVARCHAR(50) NOT NULL,
-    Quantity NVARCHAR(50)
-    FOREIGN KEY (RecipeId) REFERENCES Recipes(Id) ON DELETE CASCADE
-);
-GO
-
--- Preparacion
-CREATE TABLE RecipeSteps (
-    Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    RecipeId BIGINT NOT NULL,
-    StepNumber INT NOT NULL,
-    Description NVARCHAR(2000) NOT NULL,
-    FOREIGN KEY (RecipeId) REFERENCES Recipes(Id) ON DELETE CASCADE
-);
-GO
-
--- Favoritos
-CREATE TABLE Favorites (
-    Id BIGINT PRIMARY KEY IDENTITY(1,1),
-    UserId BIGINT NOT NULL,
-    RecipeId BIGINT NOT NULL,
-    CreatedFavorites DATETIME2 NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT FK_Favorites_Users FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE,
-    CONSTRAINT FK_Favorites_Recipes FOREIGN KEY (RecipeId) REFERENCES Recipes(Id) ON DELETE NO ACTION
-);
-GO
-
-
 USE TastyNest
 GO
 
@@ -502,12 +421,6 @@ BEGIN
         (SELECT STRING_AGG(CONVERT(VARCHAR, s.StepNumber) + ': ' + s.Description, '; ')
          FROM RecipeSteps s
          WHERE s.RecipeId = r.Id) AS Steps
-        ISNULL((SELECT STRING_AGG(i.Name + ':' + i.Quantity, '; ')
-                FROM Ingredients i
-                WHERE i.RecipeId = r.Id), 'Sin ingredientes') AS Ingredients,
-        ISNULL((SELECT STRING_AGG(CONVERT(VARCHAR, s.StepNumber) + ': ' + s.Description, '; ')
-                FROM RecipeSteps s
-                WHERE s.RecipeId = r.Id), 'Sin pasos') AS Steps
     FROM Favorites f
     INNER JOIN Recipes r ON f.RecipeId = r.Id
     INNER JOIN Categories c ON r.CategoryId = c.Id
@@ -591,4 +504,146 @@ BEGIN
     END CATCH
 END;
 GO
+
+-- Procedimiento para insertar una receta
+CREATE PROCEDURE InsertRecipe
+    @Name NVARCHAR(255),
+    @CategoryId BIGINT,
+    @UserId BIGINT,
+    @Ingredients NVARCHAR(MAX), 
+    @RecipeSteps NVARCHAR(MAX)  
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @RecipeId BIGINT;
+        INSERT INTO Recipes (Name, CategoryId, UserId, Image, CreatedRecipes)
+        VALUES (@Name, @CategoryId, @UserId, '', GETDATE());
+
+        SET @RecipeId = SCOPE_IDENTITY();
+
+        IF (@Ingredients IS NOT NULL)
+        BEGIN
+            -- Se parsea el JSON de ingredientes
+            DECLARE @IngredientTable TABLE (
+                Name NVARCHAR(100),
+                Quantity NVARCHAR(100)
+            );
+
+            INSERT INTO @IngredientTable (Name, Quantity)
+            SELECT 
+                JSON_VALUE(Value, '$.Name') AS Name,
+                JSON_VALUE(Value, '$.Quantity') AS Quantity
+            FROM OPENJSON(@Ingredients);
+
+            -- Insertar los ingredientes en la tabla Ingredients
+            INSERT INTO Ingredients (RecipeId, Name, Quantity)
+            SELECT @RecipeId, Name, Quantity
+            FROM @IngredientTable;
+        END
+
+        -- Insertar pasos en la tabla RecipeSteps
+        IF (@RecipeSteps IS NOT NULL)
+        BEGIN
+            -- Se parsea el JSON de pasos de la receta
+            DECLARE @StepTable TABLE (
+                StepNumber INT,
+                Description NVARCHAR(500)
+            );
+
+            INSERT INTO @StepTable (StepNumber, Description)
+            SELECT 
+                JSON_VALUE(Value, '$.StepNumber') AS StepNumber,
+                JSON_VALUE(Value, '$.Description') AS Description
+            FROM OPENJSON(@RecipeSteps);
+
+            -- Insertar los pasos en la tabla RecipeSteps
+            INSERT INTO RecipeSteps (RecipeId, StepNumber, Description)
+            SELECT @RecipeId, StepNumber, Description
+            FROM @StepTable;
+        END
+
+        COMMIT TRANSACTION;
+
+        -- Devolver el ID de la receta insertada
+        SELECT @RecipeId AS RecipeId;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+
+        -- Lanzar el error capturado
+        THROW;
+    END CATCH
+END;
+GO
+
+
+
+-- PROFILE
+CREATE PROCEDURE [dbo].[CheckUserID]
+    @Id BIGINT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1 
+           [Id],
+           [IdentificationNumber],
+           [Name],
+           [Email],
+           [Password],
+           [Active],
+           [RoleId],
+           [UseTempPassword],
+           [Validity],
+           [CreatedUser],
+           [ProfilePicture]
+    FROM [TastyNest].[dbo].[Users]
+    WHERE [Id] = @Id;
+END
+GO
+
+
+CREATE PROCEDURE [dbo].[UpdateProfile]
+    @Id BIGINT,
+    @Name NVARCHAR(255),
+    @Email NVARCHAR(255),
+    @ProfilePicture NVARCHAR(255),
+    @Changes NVARCHAR(MAX) OUTPUT 
+AS
+BEGIN
+    DECLARE @CurrentName NVARCHAR(255);
+    DECLARE @CurrentEmail NVARCHAR(255);
+    DECLARE @CurrentProfilePicture NVARCHAR(255);
+    DECLARE @ChangesLog NVARCHAR(MAX);
+
+    SELECT 
+        @CurrentName = Name,
+        @CurrentEmail = Email,
+        @CurrentProfilePicture = ProfilePicture
+    FROM dbo.Users
+    WHERE Id = @Id;
+
+    UPDATE dbo.Users
+    SET 
+        Name = CASE WHEN @Name IS NOT NULL AND @Name <> @CurrentName THEN @Name ELSE Name END,
+        Email = CASE WHEN @Email IS NOT NULL AND @Email <> @CurrentEmail THEN @Email ELSE Email END,
+        ProfilePicture = CASE WHEN @ProfilePicture IS NOT NULL THEN @ProfilePicture ELSE ISNULL(ProfilePicture, '') END
+    WHERE Id = @Id;
+
+    SET @Changes = 
+        CASE 
+            WHEN @Name IS NOT NULL AND @Name <> @CurrentName THEN 'Name changed'
+            WHEN @Email IS NOT NULL AND @Email <> @CurrentEmail THEN 'Email changed'
+            WHEN @ProfilePicture IS NOT NULL AND @ProfilePicture <> @CurrentProfilePicture THEN 'ProfilePicture changed'
+            ELSE 'No changes'
+        END;
+END
+GO
+
+
 

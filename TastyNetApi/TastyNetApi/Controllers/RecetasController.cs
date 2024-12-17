@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
+
 using TastyNetApi.Models;
+using TastyNetApi.Request;
 
 namespace TastyNetApi.Controllers
 {
@@ -17,15 +19,12 @@ namespace TastyNetApi.Controllers
         }
 
         [HttpPost("CrearReceta")]
-        public async Task<IActionResult> CrearReceta([FromBody] Recipe receta)
+        public async Task<IActionResult> CrearReceta([FromBody] RecipeRequest receta)
         {
-            if (receta == null || string.IsNullOrWhiteSpace(receta.Name) || receta.UserId <= 0)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Datos inválidos. Asegúrate de proporcionar un nombre válido, un UserId válido y otros datos necesarios.");
+                return BadRequest(ModelState);
             }
-
-            receta.Ingredients ??= new List<Ingredient>();
-            receta.RecipeSteps ??= new List<RecipeStep>();
 
             var connectionString = _configuration.GetConnectionString("DefaultConnection");
             using var connection = new SqlConnection(connectionString);
