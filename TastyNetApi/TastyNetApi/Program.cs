@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using TastyNetApi.Models;
 using Microsoft.EntityFrameworkCore;
+using TastyNetApi.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,12 +23,16 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
     });
 
+// Configuración para SendGrid
+builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
+builder.Services.AddSingleton<EmailService>();
 
 
 // Configuracion CORS para permitir que las solicitudes HTTP provenientes del puerto del frontend 7103 no sean bloqueadas por CORS policy
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowFrontend",
+        policy =>
     {
         policy.WithOrigins("https://localhost:7103")
               .AllowAnyMethod()
@@ -37,12 +42,12 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
-
-app.UseCors();
+app.UseCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage(); // Habilita la página de errores detallados
     app.UseSwagger();
     app.UseSwaggerUI();
 }

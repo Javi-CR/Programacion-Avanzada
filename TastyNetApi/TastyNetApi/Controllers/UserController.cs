@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using TastyNetApi.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -24,11 +25,13 @@ namespace TastyNetApi.Controllers
     {
         private readonly IConfiguration _conf;
         private readonly IHostEnvironment _env;
+        private readonly EmailService _emailService;
 
-        public UserController(IConfiguration conf, IHostEnvironment env)
+        public UserController(IConfiguration conf, IHostEnvironment env, EmailService emailService)
         {
             _conf = conf;
             _env = env;
+            _emailService = emailService; 
         }
 
         [HttpPost]
@@ -131,7 +134,87 @@ namespace TastyNetApi.Controllers
                 return Ok(respuesta);
             }
         }
+        
+        [HttpPost]
+        [Route("RecoverAccount")]
+        public async Task<IActionResult> RecoverAccount([FromBody] RecoverAccountRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return BadRequest(new { Codigo = -1, Mensaje = "Debe proporcionar un correo electrónico válido." });
+            }
 
+            var email = request.Email;
+
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                try
+                {
+                    // 1. Validar si el usuario existe
+                    var user = context.QueryFirstOrDefault<Users>(
+                        "ValidateUserEmail", 
+                        new { Email = email }
+                    );
+
+                    if (user == null)
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "El correo electrónico no está registrado en el sistema.";
+                        return NotFound(respuesta);
+                    }
+
+                    // 2. Generar código temporal y actualizar la contraseña en DB
+                    string tempPassword = GenerarCodigo();
+                    string encryptedPassword = Encrypt(tempPassword);
+                    DateTime validity = DateTime.Now.AddMinutes(10);
+
+                    context.Execute(
+                        "UpdateUserPassword",
+                        new 
+                        { 
+                            UserId = user.Id, 
+                            Password = encryptedPassword, 
+                            UseTempPassword = 1, 
+                            Validity = validity 
+                        }
+                    );
+
+                    // 3. Enviar correo al usuario con la contraseña temporal
+                    var htmlMessage = $"<p>Hola {user.Name},</p>" +
+                                      $"<p>Su contraseña temporal es: <strong>{tempPassword}</strong></p>" +
+                                      $"<p>Esta contraseña será válida hasta: {validity:dd/MM/yyyy hh:mm tt}</p>";
+
+                    var emailService = new EmailService(_conf);
+                    await emailService.SendEmailAsync(email, "Recuperación de Acceso - TastyNet", htmlMessage);
+
+                    // 4. Retornar respuesta exitosa
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = "La contraseña temporal ha sido enviada a su correo electrónico.";
+                    return Ok(respuesta);
+                }
+                catch (Exception ex)
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = $"Error: {ex.Message}";
+                    return StatusCode(StatusCodes.Status500InternalServerError, respuesta);
+                }
+            }
+        }
+
+        private string GenerarCodigo()
+        {
+            int length = 8;
+            const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            StringBuilder res = new StringBuilder();
+            Random rnd = new Random();
+            while (0 < length--)
+            {
+                res.Append(valid[rnd.Next(valid.Length)]);
+            }
+            return res.ToString();
+        }
         private string Encrypt(string texto)
         {
             byte[] iv = new byte[16];

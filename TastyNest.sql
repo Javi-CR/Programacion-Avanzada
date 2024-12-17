@@ -586,3 +586,27 @@ BEGIN
 END;
 GO
 
+CREATE PROCEDURE ValidateUserEmail
+    @Email NVARCHAR(100)
+AS
+BEGIN
+    SELECT Id, Email, Name 
+    FROM Users
+    WHERE Email = @Email AND Active = 1;
+END;
+
+CREATE PROCEDURE UpdateUserPassword
+    @UserId BIGINT,
+    @Password NVARCHAR(MAX),
+    @UseTempPassword BIT,
+    @Validity DATETIME
+AS
+BEGIN
+    UPDATE Users
+    SET Password = @Password,          -- Actualiza la contraseña
+        UseTempPassword = @UseTempPassword, -- Define si es una contraseña temporal o definitiva
+        Validity = @Validity           -- Actualiza la fecha de vencimiento
+    WHERE Id = @UserId;                -- Identifica al usuario
+END;
+
+

@@ -1,48 +1,61 @@
-﻿@{
-    Layout = "~/Views/Shared/_LayoutDash.cshtml";
+﻿@model Users
+
+@{
+Layout = "~/Views/Shared/_LayoutDash.cshtml";
 }
 
 <div class="text-center">
     <h1 class="display-4">Recover Your Account</h1>
 </div>
 
-<!-- Recover Account Section -->
 <section id="recover" class="contact section">
-
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-        <!-- Additional Information -->
+        <!-- Mostrar mensaje de éxito -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+        <div class="alert alert-success text-center">
+            @TempData["SuccessMessage"]
+        </div>
+        }
+
+        <!-- Mostrar mensaje de error -->
+        @if (ViewBag.Mensaje != null)
+        {
+        <div class="alert alert-danger text-center">
+            @ViewBag.Mensaje
+        </div>
+        }
+
         <div class="info-wrap" data-aos="fade-up" data-aos-delay="200">
             <div class="row gy-5">
                 <div class="col-lg-12 text-center">
                     <h2>...</h2>
-                    <p>Please enter your email address to recover your password.</p>
+                    <p>Por favor, introduzca su correo electrónico para recuperar su contraseña.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Recover Form -->
-        <form action="forms/recover.php" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="300">
+        <form asp-action="RecoverAccount" asp-controller="Login" method="post" data-aos="fade-up" data-aos-delay="300">
             <div class="row gy-4 d-flex justify-content-center">
-
+                <!-- Email Input -->
                 <div class="col-md-8">
-                    <input type="email" name="email" class="form-control" style="max-width: 400px; margin: 0 auto;" placeholder="Email Address" required="">
+                    <input type="email" asp-for="Email" class="form-control" style="max-width: 400px; margin: 0 auto;" placeholder="Correo electrónico" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
 
+                <!-- Submit Button -->
                 <div class="col-md-12 text-center">
-                    <button type="submit" style="max-width: 200px; margin: 0 auto;">Recover</button>
+                    <button type="submit" class="btn btn-success" style="max-width: 200px; margin: 0 auto;">Recuperar</button>
                 </div>
-
             </div>
 
+            <!-- Additional Links -->
             <div class="row text-center mt-4">
                 <div class="col-md-12">
-                    <p>Remembered your password? <a asp-area="" asp-controller="Home" asp-action="Login">Log in here</a></p>
+                    <p>¿Recordaste tu contraseña? <a asp-action="Login" asp-controller="Login" class="text-success">Iniciar sesión aquí</a></p>
                 </div>
             </div>
-
-        </form><!-- End Recover Form -->
-
+        </form>
     </div>
-
-</section><!-- /Recover Account Section -->
+</section>

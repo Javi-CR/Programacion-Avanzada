@@ -89,8 +89,60 @@ public IActionResult Register(Users model)
                 }
             }
         }
+        
+        [HttpGet]
+        public IActionResult RecoverAccount()
+        {
+            return View();
+        }
+        
+        [HttpPost]
+        public IActionResult RecoverAccount(Users model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Mensaje = "El correo electrónico proporcionado no es válido.";
+                return View(model); // Se asegura de devolver la vista con el modelo actual
+            }
 
+            try
+            {
+                using (var client = _http.CreateClient())
+                {
+                    string url = _conf.GetSection("Variables:RutaApi").Value + "User/RecoverAccount";
 
+                    JsonContent datos = JsonContent.Create(new { Email = model.Email }); // Solo se envía la propiedad necesaria
+                    var response = client.PostAsync(url, datos).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                        if (result != null && result.Codigo == 0)
+                        {
+                            TempData["SuccessMessage"] = "Se ha enviado una contraseña temporal a su correo electrónico.";
+                            return RedirectToAction("Login", "Login");
+                        }
+                        else
+                        {
+                            ViewBag.Mensaje = result?.Mensaje ?? "Ocurrió un error desconocido en la respuesta de la API.";
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.Mensaje = "Error al comunicarse con el servidor. Inténtelo más tarde.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Mensaje = $"Ocurrió un error: {ex.Message}";
+            }
+
+            return View(model); // Devuelve la vista con el modelo para mostrar el mensaje de error
+        }
+
+        
     [HttpGet]
     public IActionResult Logout()
     {
