@@ -1,18 +1,19 @@
 ﻿@{
     var nombreUsuario = "Guest";
-
     var Correo = "...";
 
-    @if (Context.Session.GetString("UserName") != null)
+    // Verifica si hay un valor en la sesión y asigna el valor
+    if (Context.Session.GetString("UserName") != null)
     {
-        nombreUsuario = @Context.Session.GetString("UserName");
+        nombreUsuario = Context.Session.GetString("UserName");
     }
 
-    @if (Context.Session.GetString("UserEmail") != null)
+    if (Context.Session.GetString("UserEmail") != null)
     {
-        Correo = @Context.Session.GetString("UserEmail");
+        Correo = Context.Session.GetString("UserEmail");
     }
 
+    var favoriteRecipes = ViewBag.FavoriteRecipes as List<FavoriteRecipeResponse>;
 }
 
 @{
@@ -38,11 +39,11 @@
             <div class="row d-flex justify-content-center text-center">
                 <div class="col-lg-8">
 
-         
+
                     <div class="profile img">
                         <img src="https://avatars.githubusercontent.com/u/101346449?v=4" alt="">
                     </div>
-        
+
                     <h1>My account</h1>
                     <p class="mb-0">@nombreUsuario (@Correo)</p>
 
@@ -50,4 +51,28 @@
             </div>
         </div>
     </div>
-</div><!-- End Page Title -->
+</div>
+<!-- End Page Title -->
+
+<h2>Recetas Favoritas</h2>
+
+<!-- Mostrar las recetas favoritas -->
+@if (favoriteRecipes != null && favoriteRecipes.Any())
+{
+    <ul>
+        @foreach (var recipe in favoriteRecipes)
+        {
+            <li>
+                <strong>@recipe.RecipeName</strong> - @recipe.CategoryName
+                <br />
+                <em>Ingredientes:</em> @recipe.IngredientName (@recipe.IngredientQuantity)
+                <br />
+                <em>Paso @recipe.StepNumber:</em> @recipe.StepDescription
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No se encontraron recetas favoritas.</p>
+}
