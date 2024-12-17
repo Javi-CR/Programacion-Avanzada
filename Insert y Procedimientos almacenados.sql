@@ -645,5 +645,39 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE [dbo].[ValidarUsuario]
+    @Email NVARCHAR(255)
+AS
+BEGIN
+	
+	SELECT
+			U.Id,
+			IdentificationNumber,
+			Name,
+			Email,
+			Active,
+			RoleId,
+			R.RolName
+	  FROM	dbo.Users U
+	  INNER JOIN dbo.Roles R ON U.RoleId = R.Id
+	  WHERE	U.Email = Email
 
+END
+GO
+
+CREATE PROCEDURE [dbo].[ActualizarContrasenna]
+    @Id BIGINT,
+	@Password VARCHAR(255),
+	@UseTempPassword BIT,
+	@Validity DATETIME
+AS
+BEGIN
+	UPDATE dbo.Users
+	   SET Password = @Password,
+		   UseTempPassword = @UseTempPassword,
+		   Validity = @Validity
+	 WHERE Id = @Id
+	
+END
+GO
 

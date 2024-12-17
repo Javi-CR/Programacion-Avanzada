@@ -101,7 +101,11 @@ namespace TastyNetApi.Controllers
 
                 if (result != null)
                 {
-                    string decryptedPassword = Decrypt(result.Password);
+                    string decryptedPassword = result.Password;
+                    if (result.UseTempPassword == false)
+                    {
+                        decryptedPassword = Decrypt(result.Password);
+                    }
                     if (decryptedPassword == model.Password)
                     {
                         if (result.UseTempPassword && result.Validity < DateTime.Now)
@@ -111,8 +115,6 @@ namespace TastyNetApi.Controllers
                         }
                         else
                         {
-
-
                             respuesta.Codigo = 0;
                             result.Token = GenerarToken(result);
                             respuesta.Mensaje = $"Bienvenido usuario, {result.Name}";
@@ -134,6 +136,107 @@ namespace TastyNetApi.Controllers
                 return Ok(respuesta);
             }
         }
+        [HttpPost]
+        [Route("RecuperarAcceso")]
+        public IActionResult RecuperarAcceso(AccessRecoveryRequest model)
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                //var parameters = new DynamicParameters();
+                //parameters.Add("CorreoElectronico", model.Correo);
+                //var result = context.QueryFirstOrDefault<Usuario>("ValidarUsuario", parameters);
+
+                var result = context.QueryFirstOrDefault<Users>("ValidarUsuario", new { model.Email });
+
+                if (result != null)
+                {
+                    var Codigo = GenerarCodigo();
+                    var Password = Encrypt(Codigo);
+                    var UseTempPassword = true;
+                    var Validity = DateTime.Now.AddMinutes(10);
+                    context.Execute("ActualizarContrasenna", new { result.Id, Password, UseTempPassword, Validity });
+
+                    var ruta = Path.Combine(_env.ContentRootPath, "RecuperarAcceso.html");
+                    var html = System.IO.File.ReadAllText(ruta);
+
+                    html = html.Replace("@@Name", result.Name);
+                    html = html.Replace("@@Password", Codigo);
+                    html = html.Replace("@@Validity", Validity.ToString("dd/MM/yyyy hh:mm tt"));
+
+                    EnviarCorreo(result.Email, "Recuperar Accesos Sistema", html);
+
+                    respuesta.Codigo = 0;
+                    respuesta.Contenido = result;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "Su información no se encontró en nuestro sistema";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
+        private string GenerarCodigo()
+        {
+            int length = 8;
+            const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZ012456789";
+            StringBuilder res = new StringBuilder();
+            Random rnd = new Random();
+            while (0 < length--)
+            {
+                res.Append(valid[rnd.Next(valid.Length)]);
+            }
+            return res.ToString();
+        }
+
+
+        private void EnviarCorreo(string destino, string asunto, string contenido)
+        {
+            string cuenta = _conf.GetSection("Variables:CorreoEmail").Value!;
+            string contrasenna = _conf.GetSection("Variables:ClaveEmail").Value!;
+
+            MailMessage message = new MailMessage();
+            message.From = new MailAddress(cuenta);
+            message.To.Add(new MailAddress(destino));
+            message.Subject = asunto;
+            message.Body = contenido;
+            message.Priority = MailPriority.Normal;
+            message.IsBodyHtml = true;
+
+            SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+            client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+            client.EnableSsl = true;
+
+            //Esto es para que no se intente enviar el correo si no hay una contraseña
+            if (!string.IsNullOrEmpty(contrasenna))
+            {
+                client.Send(message);
+            }
+        }
+
+        private string GenerarToken(Users model)
+        {
+            string SecretKey = _conf.GetSection("Variables:Llave").Value!;
+
+            List<Claim> claims = new List<Claim>();
+            claims.Add(new Claim("IdUsuario", model.Id.ToString()));
+            claims.Add(new Claim("IdRol", model.RoleId.ToString()));
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
+            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(20),
+                signingCredentials: cred);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
 
         private string Encrypt(string texto)
         {
@@ -164,27 +267,6 @@ namespace TastyNetApi.Controllers
 
             return Convert.ToBase64String(array);
         }
-
-        private string GenerarToken(Users model)
-        {
-            string SecretKey = _conf.GetSection("Variables:Llave").Value!;
-
-            List<Claim> claims = new List<Claim>();
-            claims.Add(new Claim("IdUsuario", model.Id.ToString()));
-            claims.Add(new Claim("IdRol", model.RoleId.ToString()));
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
-            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(20),
-                signingCredentials: cred);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-
 
         private string Decrypt(string texto)
         {

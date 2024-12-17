@@ -19,4 +19,11 @@ namespace TastyNetApi.Request
         public string ProfilePicture { get; set; } = string.Empty;
     }
 
+    public class AccessRecoveryRequest
+    {
+        [EmailAddress(ErrorMessage = "Invalid Email Address.")]
+        [MaxLength(100)]
+        public string Email { get; set; } = string.Empty;
+    }
+
 }
