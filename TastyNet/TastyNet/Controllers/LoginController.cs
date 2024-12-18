@@ -3,6 +3,8 @@ using TastyNet.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace TastyNet.Controllers;
 
@@ -89,6 +91,22 @@ public class LoginController : Controller
                 HttpContext.Session.SetString("UserEmail", datosContenido!.Email);
                 HttpContext.Session.SetString("UserToken", datosContenido!.Token);
                 HttpContext.Session.SetString("UserRole", datosContenido!.RoleId.ToString());
+
+                // Crear claims
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, datosContenido.Name),
+                    new Claim(ClaimTypes.Email, datosContenido.Email),
+                    new Claim(ClaimTypes.Role, datosContenido.RoleId.ToString()) // Asignar el rol como claim
+                };
+
+                // Crear identidad y principal
+                var identity = new ClaimsIdentity(claims, "CookieAuth");
+                var principal = new ClaimsPrincipal(identity);
+
+                // Registrar la cookie de autenticación
+                HttpContext.SignInAsync("CookieAuth", principal);
+
 
                 return RedirectToAction("Index", "Home");
             }

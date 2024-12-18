@@ -47,7 +47,7 @@ namespace TastyNetApi.Controllers
                 else
                 {
                     respuesta.Codigo = -1;
-                    respuesta.Mensaje = "No se encontró la información del usuario";
+                    respuesta.Mensaje = "User information not found";
                     return NotFound(respuesta);
                 }
             }
@@ -58,82 +58,61 @@ namespace TastyNetApi.Controllers
         [Route("UpdateProfile")]
         public IActionResult UpdateProfile(ProfileRequest model)
         {
-            if (!ModelState.IsValid)
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                return BadRequest(ModelState);
-            }
+                var respuesta = new Respuesta();
+                var result = context.Execute("UpdateProfile", new { model.Id, model.Name, model.Email });
 
-            if (!string.IsNullOrEmpty(model.ProfilePicture))
-            {
-                if (!model.ProfilePicture.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
-                    !model.ProfilePicture.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                if (result > 0)
                 {
-                    ModelState.AddModelError("ProfilePicture", "Solo se permiten imágenes con extensiones .JPG o .PNG.");
-                    return BadRequest(ModelState);
+                    respuesta.Codigo = 0;
                 }
-            }
-
-            var respuesta = new Respuesta();
-
-            try
-            {
-                using (var connection = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                else
                 {
-                    connection.Open();
-
-                    using (var transaction = connection.BeginTransaction())
-                    {
-                        try
-                        {
-                            var parameters = new DynamicParameters();
-                            parameters.Add("@Id", model.Id);
-                            parameters.Add("@Name", model.Name);
-                            parameters.Add("@Email", model.Email);
-                            parameters.Add("@ProfilePicture", model.ProfilePicture);
-                            parameters.Add("@Changes", dbType: DbType.String, size: -1, direction: ParameterDirection.Output);
-
-                            var result = connection.Execute(
-                                "UpdateProfile",
-                                parameters,
-                                transaction: transaction,
-                                commandType: System.Data.CommandType.StoredProcedure
-                            );
-
-                            var changesLog = parameters.Get<string>("@Changes");
-
-                            if (result > 0)
-                            {
-                                transaction.Commit();
-
-                                respuesta.Codigo = 0;
-                                respuesta.Mensaje = $"Perfil actualizado correctamente. {changesLog}";
-                                respuesta.Contenido = $"Updated as: {changesLog}"; 
-
-                                return Ok(respuesta);
-                            }
-                            else
-                            {
-                                transaction.Rollback();
-                                respuesta.Codigo = -1;
-                                respuesta.Mensaje = "La información del perfil no se ha actualizado correctamente.";
-                                return Conflict(respuesta);
-                            }
-                        }
-                        catch
-                        {
-                            transaction.Rollback();
-                            throw; 
-                        }
-                    }
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "Your profile information has not been updated correctly";
                 }
-            }
-            catch (Exception ex)
-            {
-                respuesta.Codigo = -1;
-                respuesta.Mensaje = $"Error en la actualización: {ex.Message}";
-                return StatusCode(500, respuesta);
+
+                return Ok(respuesta);
             }
         }
+
+        [HttpPut]
+        [Route("ChangePass")]
+        public IActionResult ChangePass(ChangePassword model)
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                
+                var UseTempPassword = true; 
+                var Validity = DateTime.Now;
+                var result = context.Execute("ActualizarContrasenna",
+                    new
+                    {
+                        model.Id,
+                        model.Password,
+                        UseTempPassword, 
+                        Validity 
+                    });
+
+                if (result > 0)
+                {
+                    respuesta.Codigo = 0;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "Your login information has not been updated correctly";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
+
+
 
         [HttpPut]
         [Route("InsertFavoriteRecipeProfile/{userId}/{recipeId}")]
