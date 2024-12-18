@@ -16,6 +16,13 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IHashService, HashService>();
 
+// Configure authentication (Cookie example)
+builder.Services.AddAuthentication("CookieAuth")
+.AddCookie("CookieAuth", options =>
+{
+   options.LoginPath = "/Login/Login";
+   options.AccessDeniedPath = "/Home/Index";
+});
 
 
 var app = builder.Build();

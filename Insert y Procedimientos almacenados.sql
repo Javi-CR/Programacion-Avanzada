@@ -601,7 +601,6 @@ BEGIN
            [UseTempPassword],
            [Validity],
            [CreatedUser],
-           [ProfilePicture],
 		   [FailedAttempts],
 		   [LockedUntil],
 		   [ValidatedEmail],

@@ -8,20 +8,26 @@ using TastyNet.Servicios;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Net.WebRequestMethods;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using System.Reflection;
+using TastyNet.Services;
 
 namespace TastyNet.Controllers
 {
+    [Authorize(Roles = "2")]
     public class UserController : Controller
     {
         private readonly IHttpClientFactory _http;
         private readonly IConfiguration _conf;
         private readonly IHostEnvironment _env;
+        private readonly IHashService _comunes;
 
-        public UserController(IHttpClientFactory http, IConfiguration conf, IHostEnvironment env)
+        public UserController(IHttpClientFactory http, IConfiguration conf, IHostEnvironment env, IHashService comunes)
         {
             _http = http;
             _conf = conf;
             _env = env;
+            _comunes = comunes;
         }
 
         [HttpGet]
@@ -132,10 +138,50 @@ namespace TastyNet.Controllers
             }
         }
 
-
+        
         [HttpGet]
-        [Route("ChangePassword")]
-        public IActionResult ChangePassword() => View();
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult ChangePassword(ChangePassword model)
+        {
+            model.Password = _comunes.Encrypt(model.Password);
+            model.ConfirmPassword = _comunes.Encrypt(model.ConfirmPassword);
+
+            if (model.Password != model.ConfirmPassword)
+            {
+                ViewBag.Mensaje = "Your password confirmation does not match";
+                return View();
+            }
+
+            model.Id = long.Parse(HttpContext.Session.GetString("UserConsecutive")!);
+
+            using (var client = _http.CreateClient())
+            {
+                string url = _conf.GetSection("Variables:RutaApi").Value + "Profile/ChangePass";
+
+                JsonContent datos = JsonContent.Create(model);
+
+                
+                var response = client.PutAsync(url, datos).Result;
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                if (result != null && result.Codigo == 0)
+                {
+                    ViewBag.Mensaje = "Password changed!";
+                    return View();
+                }
+                else
+                {
+                    ViewBag.Mensaje = result!.Mensaje;
+                    return View();
+                }
+            }
+        }
 
 
         

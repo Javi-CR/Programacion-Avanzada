@@ -78,6 +78,43 @@ namespace TastyNetApi.Controllers
         }
 
         [HttpPut]
+        [Route("ChangePass")]
+        public IActionResult ChangePass(ChangePassword model)
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                
+                var UseTempPassword = true; 
+                var Validity = DateTime.Now;
+                var result = context.Execute("ActualizarContrasenna",
+                    new
+                    {
+                        model.Id,
+                        model.Password,
+                        UseTempPassword, 
+                        Validity 
+                    });
+
+                if (result > 0)
+                {
+                    respuesta.Codigo = 0;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "Your login information has not been updated correctly";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
+
+
+
+        [HttpPut]
         [Route("InsertFavoriteRecipeProfile/{userId}/{recipeId}")]
         public IActionResult InsertFavoriteRecipe(long userId, long recipeId)
         {
