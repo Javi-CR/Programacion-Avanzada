@@ -784,6 +784,85 @@ BEGIN
 END;
 GO
 
+CREATE PROCEDURE [dbo].[GetFeaturedRecipes]
+AS
+BEGIN
+    SELECT TOP 9 Id, Name, Image 
+    FROM Recipes 
+END;
+GO
+
+CREATE PROCEDURE [dbo].[SearchRecipes]
+	@SearchTerm NVARCHAR(MAX) 
+AS
+BEGIN
+    SELECT r.Id, r.Name, c.Name AS CategoryName 
+    FROM Recipes r
+    INNER JOIN Categories c ON r.CategoryId = c.Id
+    WHERE r.Name LIKE '%' + @SearchTerm + '%' OR 
+          EXISTS (SELECT 1 FROM Ingredients i WHERE i.RecipeId = r.Id AND i.Name LIKE '%' + @SearchTerm + '%')
+END;
+GO
+
+
+CREATE PROCEDURE [dbo].[GetRecipeDetails] 
+    @RecipeId BIGINT 
+AS
+BEGIN
+    SELECT 
+        r.Id, 
+        r.Name,
+        (SELECT STRING_AGG(IngredientInfo, '; ') 
+         FROM (SELECT DISTINCT i.Name + ':' + i.Quantity AS IngredientInfo 
+               FROM Ingredients i 
+               WHERE i.RecipeId = r.Id) AS DistinctIngredients) AS Ingredients,
+        (SELECT STRING_AGG(StepInfo, '; ') 
+         FROM (SELECT DISTINCT CONVERT(VARCHAR, s.StepNumber) + ': ' + s.Description AS StepInfo 
+               FROM RecipeSteps s 
+               WHERE s.RecipeId = r.Id) AS DistinctSteps) AS Steps
+    FROM Recipes r 
+    WHERE r.Id = @RecipeId;
+END;
+GO
+
+
+CREATE PROCEDURE [dbo].[GetAllCategories]
+AS
+BEGIN
+    SELECT Id, Name FROM dbo.Categories;
+END;
+GO
+
+
+CREATE PROCEDURE [dbo].[GetRecipesByCategory]
+    @CategoryId bigint
+AS
+BEGIN
+    SELECT r.*
+    FROM dbo.Recipes r
+    INNER JOIN dbo.Categories c ON r.CategoryId = c.Id
+    WHERE c.Id = @CategoryId;
+END;
+GO
+
+
+CREATE PROCEDURE [dbo].[GetSubcategoriesByCategory]
+    @ParentCategoryId bigint
+AS
+BEGIN
+    SELECT c.Id, c.Name 
+    FROM dbo.Categories c
+    WHERE c.Id IN (
+        SELECT CategoryId FROM dbo.Recipes r WHERE r.CategoryId = @ParentCategoryId
+    );
+END;
+GO
+
+
+
+
+--exec [dbo].[GetSubcategoriesByCategory] @ParentCategoryId=1 ;
+
 -- NO TOCAR ESTO PORFAVOR SI SE QUIERE COMENZAR DESPUES DEL comentario que dice FINAL
 SET XACT_ABORT OFF;
 
@@ -812,3 +891,4 @@ EXEC msdb.dbo.sp_add_jobschedule @job_name = 'EliminarCuentasNoValidadas',
 
 SET XACT_ABORT ON;
 -- FINAL LO DE ARRIBA ENCERADO NO TOCARLO
+
