@@ -36,10 +36,10 @@ GO
 --GO
 
 -- Uso estos por mientras, no es recomendado tener el PlaintextPassword
-INSERT INTO Users (IdentificationNumber, Name, Email, Password, Active, RoleId, UseTempPassword, Validity)
+INSERT INTO Users (IdentificationNumber, Name, Email, Password, Active, RoleId, UseTempPassword, Validity, FailedAttempts, LockedUntil, ValidatedEmail, VerificationToken)
 VALUES 
-(N'123456789', N'Admin User', N'admin@example.com', N'hashedpassword1', 1, 1, 0, GETDATE() + 365),
-(N'987654321', N'Client User', N'client@example.com', N'hashedpassword2', 1, 2, 0, GETDATE() + 365);
+(N'123456789', N'Admin User', N'admin@example.com', N'hashedpassword1', 1, 1, 0, GETDATE() + 365, 0, NULL, 1, ''),
+(N'987654321', N'Client User', N'client@example.com', N'hashedpassword2', 1, 2, 0, GETDATE() + 365, 0, NULL, 1, '');
 GO
 
 
@@ -319,11 +319,11 @@ CREATE PROCEDURE [dbo].[CreateUser]
     @IdentificationNumber NVARCHAR(20),
     @Name NVARCHAR(255),
     @Email NVARCHAR(80),
-    @Password NVARCHAR(255) 
+    @Password NVARCHAR(255),
+	@VerificationToken NVARCHAR(100)
 AS
 BEGIN
 
-    DECLARE @EstadoActivo BIT = 1;
     DECLARE @RolUsuario SMALLINT = 2;
     DECLARE @UsaClaveTemp BIT = 0;
 
@@ -339,8 +339,8 @@ BEGIN
     END
 
     BEGIN
-        INSERT INTO dbo.Users (IdentificationNumber, Name, Email, Password, Active, RoleId, UseTempPassword, Validity)
-        VALUES (@IdentificationNumber, @Name, @Email, @Password, @EstadoActivo, @RolUsuario, @UsaClaveTemp, GETDATE() + 365);
+        INSERT INTO dbo.Users (IdentificationNumber, Name, Email, Password, Active, RoleId, UseTempPassword, Validity, FailedAttempts, LockedUntil, ValidatedEmail, VerificationToken)
+        VALUES (@IdentificationNumber, @Name, @Email, @Password, 0, @RolUsuario, @UsaClaveTemp, GETDATE() + 365, 0, NULL, 0, @VerificationToken);
 
         PRINT 'Usuario creado exitosamente.';
     END
@@ -348,30 +348,6 @@ BEGIN
 END;
 GO
 
-
---CREATE PROCEDURE [dbo].[Login]
---	@Email NVARCHAR(80),
---	@Password NVARCHAR(255)
---AS
---BEGIN
-	
---	SELECT	U.Id,
---			IdentificationNumber,
---			Name,
---			Email,
---			Active,
---			RoleId,
---			R.RolName,
---			UseTempPassword,
---			Validity 
---	  FROM	dbo.Users U
---	  INNER JOIN dbo.Roles R ON U.RoleId = R.Id 
---	  WHERE	Email = @Email
---		AND Password = @Password
---		AND Active = 1
-
---END;
---GO
 
 CREATE PROCEDURE [dbo].[Login]
     @Email NVARCHAR(80)
@@ -386,11 +362,15 @@ BEGIN
             RoleId,
             R.RolName,
             UseTempPassword,
-            Validity 
+            Validity,
+			FailedAttempts,
+			LockedUntil,
+			ValidatedEmail
     FROM    dbo.Users U
     INNER JOIN dbo.Roles R ON U.RoleId = R.Id 
     WHERE   Email = @Email
-        AND Active = 1;
+        AND Active = 1
+		OR Active = 0;
 END;
 GO
 
@@ -601,7 +581,11 @@ BEGIN
            [UseTempPassword],
            [Validity],
            [CreatedUser],
-           [ProfilePicture]
+           [ProfilePicture],
+		   [FailedAttempts],
+		   [LockedUntil],
+		   [ValidatedEmail],
+		   [VerificationToken]
     FROM [TastyNest].[dbo].[Users]
     WHERE [Id] = @Id;
 END
@@ -660,7 +644,7 @@ BEGIN
 			R.RolName
 	  FROM	dbo.Users U
 	  INNER JOIN dbo.Roles R ON U.RoleId = R.Id
-	  WHERE	U.Email = Email
+	  WHERE	U.Email = @Email
 
 END
 GO
@@ -675,9 +659,136 @@ BEGIN
 	UPDATE dbo.Users
 	   SET Password = @Password,
 		   UseTempPassword = @UseTempPassword,
-		   Validity = @Validity
+		   Validity = @Validity,
+		   FailedAttempts = 0,
+		   LockedUntil = NULL
 	 WHERE Id = @Id
 	
 END
 GO
 
+
+CREATE PROCEDURE IncrementFailedAttempts
+    @UserId BIGINT
+AS
+BEGIN
+    UPDATE Users
+    SET FailedAttempts = FailedAttempts + 1
+    WHERE Id = @UserId;
+END;
+GO
+
+CREATE PROCEDURE LockUserAccount
+    @UserId BIGINT
+AS
+BEGIN
+    UPDATE Users
+    SET LockedUntil = DATEADD(MINUTE, 15, GETDATE()),
+        FailedAttempts = 5
+    WHERE Id = @UserId;
+END;
+GO
+
+CREATE PROCEDURE ResetFailedAttempts
+    @UserId BIGINT
+AS
+BEGIN
+    UPDATE Users
+    SET FailedAttempts = 0,
+        LockedUntil = NULL
+    WHERE Id = @UserId;
+END;
+GO
+
+CREATE PROCEDURE DeleteUnvalidatedAccounts
+AS
+BEGIN
+    DELETE FROM Users
+    WHERE ValidatedEmail = 0 AND CreatedUser < DATEADD(HOUR, -1, GETDATE());
+END;
+GO
+
+CREATE PROCEDURE [dbo].[CheckIfTokenExistsForEmail]
+    @Email NVARCHAR(80)
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1 
+        FROM dbo.Users 
+        WHERE Email = @Email AND VerificationToken IS NOT NULL AND VerificationToken <> ''
+    )
+    BEGIN
+        PRINT 'Existe un token asociado a este correo';
+        RETURN 1; 
+    END
+    ELSE
+    BEGIN
+        PRINT 'No existe un token asociado a este correo';
+        RETURN -1; 
+    END
+END;
+GO
+
+CREATE PROCEDURE [dbo].[VerifyToken]
+    @VerificationToken NVARCHAR(100)
+AS
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM dbo.Users 
+        WHERE VerificationToken = @VerificationToken
+    )
+    BEGIN
+		UPDATE dbo.Users
+		SET ValidatedEmail = 1,
+			Active = 1,
+			VerificationToken = '' 
+		WHERE VerificationToken = @VerificationToken;
+		PRINT 'Ya puedes iniciar sesion se ha verificado el token';
+        RETURN 1; 
+    END
+	ELSE
+    BEGIN
+	    PRINT 'No existe tal token de verificacion';
+		RETURN -1; 
+	END
+     
+END;
+GO
+
+CREATE PROCEDURE [dbo].[DeleteUserAccount]
+    @UserId BIGINT
+AS
+BEGIN
+    DELETE FROM Users WHERE Id = @UserId;
+END;
+GO
+
+-- NO TOCAR ESTO PORFAVOR SI SE QUIERE COMENZAR DESPUES DEL comentario que dice FINAL
+SET XACT_ABORT OFF;
+
+DECLARE @jobExists INT;
+
+EXEC msdb.dbo.sp_help_job @job_name = N'EliminarCuentasNoValidadas';
+IF @@ROWCOUNT > 0
+BEGIN
+    EXEC msdb.dbo.sp_delete_job @job_name = 'EliminarCuentasNoValidadas';
+END
+
+
+EXEC msdb.dbo.sp_add_job @job_name = 'EliminarCuentasNoValidadas';
+
+EXEC msdb.dbo.sp_add_jobstep @job_name = 'EliminarCuentasNoValidadas',
+    @step_name = 'Eliminar Cuentas',
+    @command = 'EXEC DeleteUnvalidatedAccounts',
+    @database_name = 'TastyNest';
+
+EXEC msdb.dbo.sp_add_jobschedule @job_name = 'EliminarCuentasNoValidadas',
+    @name = 'CadaHora',
+    @freq_type = 4, 
+    @freq_interval = 1,
+    @freq_subday_type = 8, 
+    @freq_subday_interval = 1;
+
+SET XACT_ABORT ON;
+-- FINAL LO DE ARRIBA ENCERADO NO TOCARLO

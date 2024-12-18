@@ -15,4 +15,11 @@
     <Folder Include="wwwroot\profile\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Views\Login\VerifyEmail.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

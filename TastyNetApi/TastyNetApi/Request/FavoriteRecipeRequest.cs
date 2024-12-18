@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TastyNetApi.Models
+namespace TastyNetApi.Request
 {
-    [NotMapped]
-    public class FavoriteRecipeResponse
+    public class FavoriteRecipeRequest
     {
 
         public long RecipeId { get; set; }

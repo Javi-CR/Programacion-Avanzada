@@ -1,0 +1,26 @@
+﻿@model Users
+
+@{
+    Layout = "~/Views/Shared/_LayoutDash.cshtml";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Verify Email</h1>
+</div>
+
+<section id="verify-email" class="contact section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <form asp-action="VerifyEmail" asp-controller="Login" method="post" class="custom-form" data-aos="fade-up" data-aos-delay="300">
+            <input type="hidden" name="email" value="@ViewBag.Email" />
+
+            <div class="row gy-4 d-flex justify-content-center">
+                <div class="col-md-8">
+                    <input type="text" name="verificationToken" class="form-control custom-input" style="max-width: 400px; margin: 0 auto;" placeholder="Enter your verification token" required />
+                </div>
+                <div class="col-md-12 text-center">
+                    <button type="submit" class="btn btn-success custom-button" style="max-width: 200px; margin: 0 auto;">Verify</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>

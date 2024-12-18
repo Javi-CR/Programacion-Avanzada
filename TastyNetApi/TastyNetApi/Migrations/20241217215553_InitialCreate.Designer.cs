@@ -12,7 +12,7 @@ using TastyNetApi.Models;
 namespace TastyNetApi.Migrations
 {
     [DbContext(typeof(TastyNestDbContext))]
-    [Migration("20241217030216_InitialCreate")]
+    [Migration("20241217215553_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -202,10 +202,16 @@ namespace TastyNetApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("int");
+
                     b.Property<string>("IdentificationNumber")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("LockedUntil")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -225,12 +231,23 @@ namespace TastyNetApi.Migrations
                     b.Property<bool>("UseTempPassword")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("ValidatedEmail")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("Validity")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("VerificationToken")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("IdentificationNumber")
                         .IsUnique();
 
                     b.HasIndex("RoleId");

@@ -13,6 +13,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using TastyNetApi.Request;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using System.Data;
+using System.Text.RegularExpressions;
+using System.ComponentModel.DataAnnotations;
+using System.Drawing;
 
 namespace TastyNetApi.Controllers
 
@@ -49,27 +54,40 @@ namespace TastyNetApi.Controllers
 
                     try
                     {
-                        var encryptedPassword = Encrypt(model.Password);  
-                        var result = context.Execute("CreateUser",
-                            new
-                            {
-                                IdentificationNumber = model.IdentificationNumber.ToString(),
-                                model.Name,
-                                model.Email,
-                                Password = encryptedPassword
-                            }, transaction: transaction);
+                        var encryptedPassword = Encrypt(model.Password);
+                        var verificationToken = GenerarCodigoFuerte();
+
+                        var parameters = new DynamicParameters();
+                        parameters.Add("@IdentificationNumber", model.IdentificationNumber.ToString());
+                        parameters.Add("@Name", model.Name);
+                        parameters.Add("@Email", model.Email);
+                        parameters.Add("@Password", encryptedPassword);
+                        parameters.Add("@VerificationToken", verificationToken);
+
+                        var result = context.Execute("CreateUser", parameters, transaction: transaction);
+
 
                         if (result > 0)
-                        {                          
+                        {
+                            var ruta = Path.Combine(_env.ContentRootPath, "CorreoVerificacion.html");
+                            var html = System.IO.File.ReadAllText(ruta);
+
+                            html = html.Replace("@@Name", model.Name);
+                            html = html.Replace("@@VerificationCode", verificationToken);
+                            EnviarCorreo(model.Email, "Verificación de correo electrónico", html);
+
                             transaction.Commit();
                             respuesta.Codigo = 0;
-                            respuesta.Mensaje = "Su información se ha registrado correctamente";
+                            respuesta.Mensaje = "Registro exitoso. Por favor verifica tu correo electrónico usando el código enviado.";
+                            return Ok(respuesta);
+
                         }
                         else
                         {
                             transaction.Rollback();
                             respuesta.Codigo = -1;
-                            respuesta.Mensaje = "Su información no se ha registrado correctamente (Usuario fallido)";
+                            respuesta.Mensaje = "No se pudo completar el registro.";
+                            return Conflict(respuesta);
                         }
                     }
                     catch (Exception ex)
@@ -77,9 +95,8 @@ namespace TastyNetApi.Controllers
                         transaction.Rollback();
                         respuesta.Codigo = -1;
                         respuesta.Mensaje = $"Error: {ex.Message}";
+                        return StatusCode(500, respuesta);
                     }
-
-                    return Ok(respuesta);
                 }
             }
         }
@@ -97,62 +114,154 @@ namespace TastyNetApi.Controllers
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new Respuesta();
-                var result = context.QueryFirstOrDefault<Users>("Login", new { model.Email});
+                var user = context.QueryFirstOrDefault<Users>("Login", new { model.Email });
 
-                if (result != null)
+                if (user != null)
                 {
-                    string decryptedPassword = result.Password;
-                    if (result.UseTempPassword == false)
+                    if (user.LockedUntil != null && DateTime.Now < user.LockedUntil)
                     {
-                        decryptedPassword = Decrypt(result.Password);
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "Su cuenta está bloqueada. Intente nuevamente después de " + user.LockedUntil;
+                        return Conflict(respuesta); 
                     }
-                    if (decryptedPassword == model.Password)
+
+                    if (user.ValidatedEmail == false)
                     {
-                        if (result.UseTempPassword && result.Validity < DateTime.Now)
-                        {
-                            respuesta.Codigo = -1;
-                            respuesta.Mensaje = "Su información de acceso temporal ha expirado";
-                        }
-                        else
-                        {
-                            respuesta.Codigo = 0;
-                            result.Token = GenerarToken(result);
-                            respuesta.Mensaje = $"Bienvenido usuario, {result.Name}";
-                            respuesta.Contenido = result;
-                        }
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "Su cuenta aun no esta activada. Ingrese a su correo y verifique su email";
+                        return BadRequest(respuesta); 
+                    }
+
+                    string decryptedPassword = string.Empty;
+
+                    if (user.UseTempPassword == true)
+                    {
+                        decryptedPassword = user.Password;
                     }
                     else
                     {
+                        decryptedPassword = Decrypt(user.Password);
+                    }
+
+                    var parameters = new DynamicParameters();
+                    parameters.Add("@UserId", user.Id);
+                    
+
+
+                    if (decryptedPassword == model.Password)
+                    {
+                        context.Execute("ResetFailedAttempts", parameters, commandType: CommandType.StoredProcedure);
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = $"Bienvenido, {user.Name}";
+                        respuesta.Contenido = user;
+                        return Ok(respuesta);
+
+                    }
+                    else
+                    {
+                        context.Execute("IncrementFailedAttempts", parameters, commandType: CommandType.StoredProcedure);
+
+                        var attempts = user.FailedAttempts + 1;
                         respuesta.Codigo = -1;
-                        respuesta.Mensaje = "Contraseña incorrecta";
+
+                        if (attempts >= 5)
+                        {
+                            context.Execute("LockUserAccount", parameters, commandType: CommandType.StoredProcedure);
+                            respuesta.Mensaje = "Cuenta bloqueada por múltiples intentos fallidos.";
+                            return Conflict(respuesta);
+                        }
+                        
+                        respuesta.Mensaje = "Contraseña incorrecta.";
+                        return Unauthorized(respuesta);
                     }
                 }
                 else
                 {
                     respuesta.Codigo = -1;
-                    respuesta.Mensaje = "Su información no se encontró en nuestro sistema";
+                    respuesta.Mensaje = "Usuario no encontrado.";
                 }
 
-                return Ok(respuesta);
+                return NotFound(respuesta);
             }
         }
+
+        [HttpDelete]
+        [Route("DeleteAccount/{userId}")]
+        public IActionResult DeleteAccount([Required] long userId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (string.IsNullOrEmpty((userId).ToString()))
+            {
+                return BadRequest("Id es requerido.");
+            }
+            if (!long.TryParse(userId.ToString(), out _))
+            {
+                return BadRequest("Id es inválido. Debe ser un número válido.");
+            }
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                context.Open();
+
+                using (var transaction = context.BeginTransaction())
+                {
+                    var respuesta = new Respuesta();
+
+                    try
+                    {
+                        var parameters = new DynamicParameters();
+                        parameters.Add("@UserId", userId);
+
+                        int rowsAffected = context.Execute("DeleteUserAccount", parameters, transaction: transaction, commandType: CommandType.StoredProcedure);
+
+                        if (rowsAffected > 0)
+                        {
+                            transaction.Commit();
+                            respuesta.Codigo = 0;
+                            respuesta.Mensaje = "Cuenta eliminada exitosamente.";
+                            return Ok(respuesta);
+                        }
+                        else
+                        {
+                            transaction.Rollback();
+                            respuesta.Codigo = -1;
+                            respuesta.Mensaje = "No se pudo eliminar la cuenta. Usuario no encontrado.";
+                            return NotFound(respuesta);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = $"Error: {ex.Message}";
+                        return StatusCode(500, respuesta);
+                    }
+                }
+            }
+        }
+
+
+
+
         [HttpPost]
         [Route("RecuperarAcceso")]
         public IActionResult RecuperarAcceso(AccessRecoveryRequest model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new Respuesta();
-
-                //var parameters = new DynamicParameters();
-                //parameters.Add("CorreoElectronico", model.Correo);
-                //var result = context.QueryFirstOrDefault<Usuario>("ValidarUsuario", parameters);
 
                 var result = context.QueryFirstOrDefault<Users>("ValidarUsuario", new { model.Email });
 
                 if (result != null)
                 {
-                    var Codigo = GenerarCodigo();
+                    var Codigo = GenerarCodigoFuerte();
                     var Password = Encrypt(Codigo);
                     var UseTempPassword = true;
                     var Validity = DateTime.Now.AddMinutes(10);
@@ -169,6 +278,7 @@ namespace TastyNetApi.Controllers
 
                     respuesta.Codigo = 0;
                     respuesta.Contenido = result;
+                    return Ok(respuesta);
                 }
                 else
                 {
@@ -176,14 +286,119 @@ namespace TastyNetApi.Controllers
                     respuesta.Mensaje = "Su información no se encontró en nuestro sistema";
                 }
 
-                return Ok(respuesta);
+                return NotFound(respuesta);
             }
         }
 
-        private string GenerarCodigo()
+        [HttpPost]
+        [Route("VerifyEmail")]
+        public IActionResult VerifyEmail([FromBody] VerifyTokenRequest model)
         {
-            int length = 8;
-            const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZ012456789";
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (string.IsNullOrEmpty(model.VerificationToken))
+            {
+                return BadRequest("Token es requerido.");
+            }
+
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                try
+                {
+                    var parameters = new DynamicParameters();
+                    parameters.Add("@VerificationToken", (model.VerificationToken));
+                    parameters.Add("@ReturnValue", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.ReturnValue);
+
+                    context.Execute(
+                        "VerifyToken",
+                        parameters,
+                        commandType: System.Data.CommandType.StoredProcedure
+                    );
+                    int returnValue = parameters.Get<int>("@ReturnValue");
+
+                    if (returnValue > 0)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Cuenta verificada exitosamente. Ya puedes iniciar sesión.";
+                        return Ok(respuesta);
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "El token de verificación es inválido o ha expirado.";
+                        return BadRequest(respuesta);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = $"Error: {ex.Message}";
+                    return StatusCode(500, respuesta);
+                }
+
+            }
+        }
+
+        [HttpGet]
+        [Route("CheckTokenExistence")]
+        public IActionResult CheckTokenExistence(string email)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("El email es requerido.");
+            }
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                try
+                {
+                    var parameters = new DynamicParameters();
+                    parameters.Add("@Email", email);
+
+                    parameters.Add("@ReturnValue", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.ReturnValue);
+
+                    context.Execute(
+                        "CheckIfTokenExistsForEmail",
+                        parameters,
+                        commandType: System.Data.CommandType.StoredProcedure
+                    );
+                    int returnValue = parameters.Get<int>("@ReturnValue");
+
+                    if (returnValue > 0)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Token encontrado.";
+                        return Ok(respuesta);
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "El token no existe con este email o ha expirado.";
+                        return NotFound(respuesta);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = $"Error: {ex.Message}";
+                    return StatusCode(500, respuesta);
+                }
+            }
+        }
+
+        private string GenerarCodigoFuerte()
+        {
+            int length = 18;
+            const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+<>?";
             StringBuilder res = new StringBuilder();
             Random rnd = new Random();
             while (0 < length--)
@@ -194,37 +409,72 @@ namespace TastyNetApi.Controllers
         }
 
 
+
         private void EnviarCorreo(string destino, string asunto, string contenido)
         {
-            string cuenta = _conf.GetSection("Variables:CorreoEmail").Value!;
-            string contrasenna = _conf.GetSection("Variables:ClaveEmail").Value!;
+            if (string.IsNullOrWhiteSpace(destino) || !EsCorreoValido(destino))
+                throw new ArgumentException("El correo del destinatario está vacío.");
 
-            MailMessage message = new MailMessage();
-            message.From = new MailAddress(cuenta);
-            message.To.Add(new MailAddress(destino));
-            message.Subject = asunto;
-            message.Body = contenido;
-            message.Priority = MailPriority.Normal;
-            message.IsBodyHtml = true;
+            destino = destino.Trim();
 
-            SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-            client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
-            client.EnableSsl = true;
-
-            //Esto es para que no se intente enviar el correo si no hay una contraseña
-            if (!string.IsNullOrEmpty(contrasenna))
+            try
             {
+                MailAddress recipient = new MailAddress(destino);
+
+                string cuenta = _conf.GetSection("Variables:CorreoEmail").Value!;
+                string contrasenna = _conf.GetSection("Variables:ClaveEmail").Value!;
+
+                MailMessage message = new MailMessage
+                {
+                    From = new MailAddress(cuenta),
+                    Subject = asunto,
+                    Body = contenido,
+                    IsBodyHtml = true,
+                    Priority = MailPriority.Normal
+                };
+                message.To.Add(recipient);
+
+                SmtpClient client = new SmtpClient("smtp.office365.com", 587)
+                {
+                    Credentials = new System.Net.NetworkCredential(cuenta, contrasenna),
+                    EnableSsl = true
+                };
+
                 client.Send(message);
             }
+            catch (FormatException)
+            {
+                throw new ArgumentException("Formato inválido para la dirección de correo: " + destino);
+            }
+            catch (SmtpException smtpEx)
+            {
+                Console.WriteLine("Error SMTP: " + smtpEx.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error general: " + ex.Message);
+                throw;
+            }
         }
+
+
+        private bool EsCorreoValido(string correo)
+        {
+            string patron = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            return Regex.IsMatch(correo, patron);
+        }
+
 
         private string GenerarToken(Users model)
         {
             string SecretKey = _conf.GetSection("Variables:Llave").Value!;
 
             List<Claim> claims = new List<Claim>();
-            claims.Add(new Claim("IdUsuario", model.Id.ToString()));
-            claims.Add(new Claim("IdRol", model.RoleId.ToString()));
+            {
+                claims.Add(new Claim("IdUsuario", model.Id.ToString()));
+                claims.Add(new Claim("IdRol", model.RoleId.ToString()));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
