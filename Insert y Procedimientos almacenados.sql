@@ -485,6 +485,26 @@ BEGIN
 END;
 GO
 
+CREATE PROCEDURE [dbo].[DeleteFavoritesByUserId]
+    @UserId BIGINT
+AS
+BEGIN
+    DELETE FROM Favorites
+    WHERE UserId = @UserId;
+END;
+GO
+
+CREATE PROCEDURE [dbo].[DeleteFavoriteByUserIdAndRecipeId]
+    @UserId BIGINT,
+    @RecipeId BIGINT
+AS
+BEGIN
+    DELETE FROM Favorites
+    WHERE UserId = @UserId AND RecipeId = @RecipeId;
+END;
+GO
+
+
 -- Procedimiento para insertar una receta
 CREATE PROCEDURE InsertRecipe
     @Name NVARCHAR(255),
