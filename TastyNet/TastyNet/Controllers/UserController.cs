@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Data.SqlClient;
+using System.Data;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using TastyNet.Models;
 using TastyNet.Servicios;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Net.WebRequestMethods;
+using Microsoft.AspNetCore.Http;
 
 namespace TastyNet.Controllers
 {
@@ -99,84 +103,32 @@ namespace TastyNet.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditProfile(IFormFile Imagen, Users model)
+        public IActionResult EditProfile(EditProfile model)
         {
-            var consecutivo = HttpContext.Session.GetString("UserConsecutive");
+            model.Id = long.Parse(HttpContext.Session.GetString("UserConsecutive")!);
 
-            var ext = string.Empty;
-            var folder = string.Empty;
-            model.ProfilePicture = string.Empty;
-
-            if (!string.IsNullOrEmpty(consecutivo))
+            using (var client = _http.CreateClient())
             {
-                model.Id = long.Parse(consecutivo);
-            }
-            else
-            {
-                return View();
-            }
+                string url = _conf.GetSection("Variables:RutaApi").Value + "Profile/UpdateProfile";
 
-            if (Imagen != null)
-            {
-                ext = Path.GetExtension(Path.GetFileName(Imagen.FileName));
-                folder = Path.Combine(_env.ContentRootPath, "wwwroot\\profile");
-                model.ProfilePicture = "/products/";
+                JsonContent datos = JsonContent.Create(model);
 
-                if (ext.ToLower() != ".png")
+                
+                var response = client.PutAsync(url, datos).Result;
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                if (result != null && result.Codigo == 0)
                 {
-                    ViewBag.Mensaje = "La imagen debe ser .png";
+                    HttpContext.Session.SetString("UserName", model.Name);
+                    HttpContext.Session.SetString("UserEmail", model.Email);
+
+                    return RedirectToAction("Profile");
+                }
+                else
+                {
+                    ViewBag.Mensaje = result!.Mensaje;
                     return View();
                 }
-            }
-
-            try
-            {
-                using (var client = _http.CreateClient())
-                {
-                    string url = _conf.GetSection("Variables:RutaApi").Value + "Profile/UpdateProfile";
-
-                    // Serializar el modelo a JSON
-                    JsonContent datos = JsonContent.Create(model);
-
-                    // Hacer la solicitud HTTP asincrónicamente
-                    var response = await client.PostAsync(url, datos);
-
-                    // Verificar si la respuesta es exitosa
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var result = await response.Content.ReadFromJsonAsync<Respuesta>();
-
-                        if (result != null && result.Codigo == 0)
-                        {
-                            if (Imagen != null)
-                            {
-                                string archivo = Path.Combine(folder, result.Mensaje + ext);
-                                using (Stream fs = new FileStream(archivo, FileMode.Create))
-                                {
-                                    Imagen.CopyTo(fs);
-                                }
-                            }
-
-                            return RedirectToAction("Profile", "User");
-                        }
-                        else
-                        {
-                            ViewBag.Mensaje = result?.Mensaje ?? "Error desconocido.";
-                            return View();
-                        }
-                    }
-                    else
-                    {
-                        ViewBag.Mensaje = "Error al conectar con el servidor.";
-                        return View();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Captura excepciones relacionadas con la solicitud HTTP
-                ViewBag.Mensaje = $"Error en la solicitud: {ex.Message}";
-                return View();
             }
         }
 

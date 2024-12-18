@@ -78,11 +78,11 @@ public class LoginController : Controller
                 var tokenCheckResponse = client.GetAsync($"{tokenCheckUrl}?email={model.Email}").Result;
                 var tokenCheckResult = tokenCheckResponse.Content.ReadFromJsonAsync<Respuesta>().Result;
 
-                if (tokenCheckResult != null && tokenCheckResult.Codigo == 0)
-                {
-                    TempData["Email"] = model.Email;
-                    return RedirectToAction("VerifyEmail", "Login");
-                }
+                //if (tokenCheckResult != null && tokenCheckResult.Codigo == 0)
+                //{
+                    //TempData["Email"] = model.Email;
+                    //return RedirectToAction("VerifyEmail", "Login");
+                //}
 
                 HttpContext.Session.SetString("UserConsecutive", datosContenido!.Id.ToString());
                 HttpContext.Session.SetString("UserName", datosContenido!.Name);

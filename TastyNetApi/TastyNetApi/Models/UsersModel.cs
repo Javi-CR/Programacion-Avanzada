@@ -25,8 +25,6 @@ namespace TastyNetApi.Models
         [NotMapped]
         public string Token { get; set; } = string.Empty;
 
-        public string? ProfilePicture { get; set; } = string.Empty;
-
         [Required]
         [MaxLength(100)]
         public string Email { get; set; } = string.Empty;
