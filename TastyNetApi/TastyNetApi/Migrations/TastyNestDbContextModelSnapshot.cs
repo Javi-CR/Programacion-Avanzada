@@ -219,9 +219,6 @@ namespace TastyNetApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProfilePicture")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<short>("RoleId")
                         .HasColumnType("smallint");
 

@@ -12,8 +12,8 @@ using TastyNetApi.Models;
 namespace TastyNetApi.Migrations
 {
     [DbContext(typeof(TastyNestDbContext))]
-    [Migration("20241217215553_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241218161248_Iniciar")]
+    partial class Iniciar
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -220,9 +220,6 @@ namespace TastyNetApi.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfilePicture")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<short>("RoleId")

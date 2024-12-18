@@ -45,7 +45,7 @@
 
 <section class="contact section">
     <!-- Form -->
-    <form form method="post" asp-controller="User" asp-action="EditProfile" class="php-email-form" enctype="multipart/form-data">
+    <form form method="post" asp-controller="User" asp-action="EditProfile" class="php-email-form">
 
         <div class="row gy-4 d-flex justify-content-center">
             <div class="col-md-8">
@@ -56,14 +56,6 @@
                 <input type="email" asp-for="Email" class="form-control" placeholder="Your email address" required>
             </div>
 
-            <div class="col-md-8">
-                <input type="text" class="form-control" placeholder="Select an image" disabled>
-            </div>
-
-            <div class="col-md-8">
-                <input type="file" id="Imagen" name="Imagen" accept="image/png" class="form-control" />
-            </div>
-
             <div class="col-md-12 text-center">
                 <button type="submit" class="btn btn-primary">Update</button>
             </div>
@@ -72,4 +64,3 @@
     </form>
 
 </section>
-
