@@ -216,5 +216,230 @@ namespace TastyNetApi.Controllers
 
             return Ok(new { Message = "Receta eliminada exitosamente." });
         }
+
+        [HttpGet("ObtenerRecetasDestacadas")]
+        public async Task<IActionResult> ObtenerRecetasDestacadas()
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            try
+            {
+                var recetasDestacadas = await GetFeaturedRecipesAsync(connection);
+                return Ok(recetasDestacadas);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerRecetasDestacadas: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Error al obtener las recetas destacadas.");
+            }
+        }
+
+        private async Task<List<RecipesFeaturedRequest>> GetFeaturedRecipesAsync(SqlConnection connection)
+        {
+            using var command = new SqlCommand("GetFeaturedRecipes", connection) { CommandType = CommandType.StoredProcedure };
+
+            using var reader = await command.ExecuteReaderAsync();
+            var result = new List<RecipesFeaturedRequest>();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new RecipesFeaturedRequest
+                {
+                    Id = reader.GetInt64(0),
+                    Name = reader.GetString(1),
+                    Image = reader.GetString(2),
+                });
+            }
+
+            return result;
+        }
+        [HttpGet("BuscarRecetas")]
+        public async Task<IActionResult> BuscarRecetas(string searchTerm)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            try
+            {
+                var recetasEncontradas = await SearchRecipesAsync(connection, searchTerm);
+                return Ok(recetasEncontradas);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en BuscarRecetas: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Error al buscar las recetas.");
+            }
+        }
+
+        private async Task<List<SearchRequest>> SearchRecipesAsync(SqlConnection connection, string searchTerm)
+        {
+            using var command = new SqlCommand("SearchRecipes", connection) { CommandType = CommandType.StoredProcedure };
+            command.Parameters.AddWithValue("@SearchTerm", searchTerm);
+
+            using var reader = await command.ExecuteReaderAsync();
+            var result = new List<SearchRequest>();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new SearchRequest
+                {
+                    Id = reader.GetInt64(0),
+                    Name = reader.GetString(1),
+                    CategoryName = reader.GetString(2),
+                });
+            }
+
+            return result;
+        }
+        [HttpGet("ObtenerDetallesReceta/{recipeId}")]
+        public async Task<IActionResult> ObtenerDetallesReceta(long recipeId)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            try
+            {
+                var recetaDetalles = await GetRecipeDetailsAsync(connection, recipeId);
+                return Ok(recetaDetalles);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerDetallesReceta: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Error al obtener los detalles de la receta.");
+            }
+        }
+        private async Task<RecipeDetailsRequest> GetRecipeDetailsAsync(SqlConnection connection, long recipeId)
+        {
+            using var command = new SqlCommand("GetRecipeDetails", connection) { CommandType = CommandType.StoredProcedure };
+            command.Parameters.AddWithValue("@RecipeId", recipeId);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new RecipeDetailsRequest
+                {
+                    Id = reader.GetInt64(0),
+                    Name = reader.GetString(1),
+                    Ingredients = reader.IsDBNull(2) ? null : reader.GetString(2).Split("; "),
+                    Steps = reader.IsDBNull(3) ? null : reader.GetString(3).Split("; "),
+                };
+            }
+
+            return null; 
+        }
+
+        [HttpGet("ObtenerTodasLasCategorias")]
+        public async Task<IActionResult> ObtenerTodasLasCategorias()
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            try
+            {
+                using var command = new SqlCommand("GetAllCategories", connection) { CommandType = CommandType.StoredProcedure };
+                using var reader = await command.ExecuteReaderAsync();
+
+                var result = new List<AllCategoriesRequest>();
+                while (await reader.ReadAsync())
+                {
+                    result.Add(new AllCategoriesRequest
+                    {
+                        Id = reader.GetInt64(0),
+                        Name = reader.GetString(1)
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerTodasLasCategorias: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Error al obtener las categorías.");
+            }
+        }
+
+        [HttpGet("ObtenerRecetasPorCategoria/{categoryId}")]
+        public async Task<IActionResult> ObtenerRecetasPorCategoria(long categoryId)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            try
+            {
+                using var command = new SqlCommand("GetRecipesByCategory", connection) { CommandType = CommandType.StoredProcedure };
+                command.Parameters.AddWithValue("@CategoryId", categoryId);
+
+                using var reader = await command.ExecuteReaderAsync();
+                var result = new List<RecipesByCategoryRequest>();
+
+                while (await reader.ReadAsync())
+                {
+                    result.Add(new RecipesByCategoryRequest
+                    {
+                        Id = reader.GetInt64(0),
+                        CategoryId = reader.GetInt64(1),
+                        UserId = reader.GetInt64(2),
+                        Name = reader.GetString(3),
+                        Image = reader.GetString(4),
+                        CreatedRecipes = reader.GetDateTime(5)
+                    });
+                }
+                var formattedResult = result.Select(r => new
+                {
+                    r.Id,
+                    r.Name,
+                    r.CategoryId,
+                    r.UserId,
+                    r.Image,
+                    CreatedRecipes = r.CreatedRecipes.ToString("dd/MM/yyyy HH:mm:ss")
+                });
+                return Ok(formattedResult);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerRecetasPorCategoria: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Error al obtener las recetas.");
+            }
+        }
+
+        [HttpGet("ObtenerSubcategoriasPorCategoria/{parentCategoryId}")]
+        public async Task<IActionResult> ObtenerSubcategoriasPorCategoria(long parentCategoryId)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            try
+            {
+                using var command = new SqlCommand("GetSubcategoriesByCategory", connection) { CommandType = CommandType.StoredProcedure };
+                command.Parameters.AddWithValue("@ParentCategoryId", parentCategoryId);
+
+                using var reader = await command.ExecuteReaderAsync();
+                var result = new List<SubCategoriesByCategoryRequest>();
+
+                while (await reader.ReadAsync())
+                {
+                    result.Add(new SubCategoriesByCategoryRequest
+                    {
+                        Id = reader.GetInt64(0),
+                        Name = reader.GetString(1)
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerSubcategoriasPorCategoria: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Error al obtener las subcategorías.");
+            }
+        }
     }
 }
