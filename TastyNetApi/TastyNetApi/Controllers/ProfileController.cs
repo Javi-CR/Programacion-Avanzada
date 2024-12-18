@@ -198,6 +198,125 @@ namespace TastyNetApi.Controllers
             }
         }
 
+        [HttpDelete]
+        [Route("DeleteAllFavoriteRecipes/{userId}")]
+        public IActionResult DeleteAllFavoriteRecipes(long userId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var respuesta = new Respuesta();
+
+            try
+            {
+                using (var connection = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                {
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            var parameters = new { UserId = userId };
+                            var result = connection.Execute(
+                                "DeleteFavoritesByUserId",
+                                parameters,
+                                transaction: transaction,
+                                commandType: CommandType.StoredProcedure
+                            );
+
+                            if (result > 0)
+                            {
+                                transaction.Commit();
+                                respuesta.Codigo = 1;
+                                respuesta.Mensaje = "Todas las recetas favoritas eliminadas exitosamente.";
+                                return Ok(respuesta);
+                            }
+                            else
+                            {
+                                transaction.Rollback();
+                                respuesta.Codigo = 0;
+                                respuesta.Mensaje = "No se pudieron eliminar las recetas favoritas.";
+                                return Conflict(respuesta);
+                            }
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Codigo = -1;
+                respuesta.Mensaje = $"Error en la conexión o transacción: {ex.Message}";
+                return StatusCode(500, respuesta);
+            }
+        }
+
+
+        [HttpDelete]
+        [Route("DeleteFavoriteRecipe/{userId}/{recipeId}")]
+        public IActionResult DeleteFavoriteRecipe(long userId, long recipeId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var respuesta = new Respuesta();
+
+            try
+            {
+                using (var connection = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                {
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            var parameters = new { UserId = userId, RecipeId = recipeId };
+                            var result = connection.Execute(
+                                "DeleteFavoriteByUserIdAndRecipeId",
+                                parameters,
+                                transaction: transaction,
+                                commandType: CommandType.StoredProcedure
+                            );
+
+                            if (result > 0)
+                            {
+                                transaction.Commit();
+                                respuesta.Codigo = 1;
+                                respuesta.Mensaje = "Receta favorita eliminada exitosamente.";
+                                return Ok(respuesta);
+                            }
+                            else
+                            {
+                                transaction.Rollback();
+                                respuesta.Codigo = 0;
+                                respuesta.Mensaje = "No se pudo eliminar la receta favorita específica.";
+                                return Conflict(respuesta);
+                            }
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Codigo = -1;
+                respuesta.Mensaje = $"Error en la conexión o transacción: {ex.Message}";
+                return StatusCode(500, respuesta);
+            }
+        }
+
 
         [HttpGet]
         [Route("GetFavoriteRecipes/{userId}")]
