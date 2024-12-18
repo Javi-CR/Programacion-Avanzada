@@ -52,6 +52,10 @@ namespace TastyNetApi.Migrations
                     RoleId = table.Column<short>(type: "smallint", nullable: false),
                     UseTempPassword = table.Column<bool>(type: "bit", nullable: false),
                     Validity = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FailedAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockedUntil = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ValidatedEmail = table.Column<bool>(type: "bit", nullable: false),
+                    VerificationToken = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     CreatedUser = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()")
                 },
                 constraints: table =>
@@ -202,6 +206,12 @@ namespace TastyNetApi.Migrations
                 name: "IX_Users_Email",
                 table: "Users",
                 column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_IdentificationNumber",
+                table: "Users",
+                column: "IdentificationNumber",
                 unique: true);
 
             migrationBuilder.CreateIndex(

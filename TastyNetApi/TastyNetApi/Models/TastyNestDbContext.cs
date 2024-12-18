@@ -19,7 +19,6 @@ namespace TastyNetApi.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-
             modelBuilder.Entity<Users>()
                 .Property(u => u.CreatedUser)
                 .HasDefaultValueSql("GETDATE()");
@@ -73,6 +72,9 @@ namespace TastyNetApi.Models
 
             modelBuilder.Entity<Users>()
                 .HasIndex(e => e.Email)
+                .IsUnique();
+            modelBuilder.Entity<Users>()
+                .HasIndex(e => e.IdentificationNumber)
                 .IsUnique();
 
             modelBuilder.Entity<Users>()

@@ -39,6 +39,12 @@
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
 
+                <!-- Token Input (It shows conditionaly) -->
+                <div class="col-md-8" id="tokenVerificationField" style="display: none;">
+                    <input type="text" name="VerificationToken" class="form-control custom-input" style="max-width: 400px; margin: 0 auto;" placeholder="Enter your verification token" />
+                </div>
+
+
                 <!-- Submit Button -->
                 <div class="col-md-12 text-center">
                     <button type="submit" class="btn btn-success custom-button" style="max-width: 200px; margin: 0 auto;">Login</button>
@@ -59,3 +65,12 @@
     </div>
 
 </section><!-- /Login Section -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tokenField = document.getElementById("tokenVerificationField");
+        if (@ViewBag.TokenRequired) {
+            tokenField.style.display = "block";
+        }
+    });
+</script>

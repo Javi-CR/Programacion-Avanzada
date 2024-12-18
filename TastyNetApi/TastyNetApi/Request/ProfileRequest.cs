@@ -21,9 +21,10 @@ namespace TastyNetApi.Request
 
     public class AccessRecoveryRequest
     {
+        [Required]
         [EmailAddress(ErrorMessage = "Invalid Email Address.")]
         [MaxLength(100)]
-        public string Email { get; set; } = string.Empty;
+        public string Email { get; set; }
     }
 
 }
