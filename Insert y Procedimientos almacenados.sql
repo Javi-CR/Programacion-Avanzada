@@ -485,6 +485,28 @@ BEGIN
 END;
 GO
 
+CREATE PROCEDURE [dbo].[GetAllRecipes]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        R.[Id],
+        R.[UserId],
+        R.[CategoryId],
+        C.[Name],
+        R.[Name],
+        R.[Image],
+        R.[CreatedRecipes]
+    FROM 
+        [TastyNest].[dbo].[Recipes] R
+    LEFT JOIN 
+        [TastyNest].[dbo].[Categories] C ON R.[CategoryId] = C.[Id];
+END;
+GO
+
+
+
 CREATE PROCEDURE [dbo].[DeleteFavoritesByUserId]
     @UserId BIGINT
 AS

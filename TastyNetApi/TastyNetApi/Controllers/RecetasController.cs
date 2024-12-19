@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -208,6 +210,34 @@ namespace TastyNetApi.Controllers
                 return StatusCode(500, $"Error al eliminar la receta: {ex.Message}");
             }
         }
+
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("AllRecipes")]
+        public IActionResult AllRecipes()
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+                var result = context.Query<RecipesALL>("GetAllRecipes", new { });
+
+                if (result.Any())
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Contenido = result;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "There are no products recorded at this time";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
+
 
         [HttpGet("ObtenerRecetasDestacadas")]
         public async Task<IActionResult> ObtenerRecetasDestacadas()
