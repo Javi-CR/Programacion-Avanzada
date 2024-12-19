@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -163,59 +165,66 @@ namespace TastyNetApi.Controllers
             await command.ExecuteNonQueryAsync();
         }
 
-        private async Task<List<dynamic>> GetFavoriteRecipesWithDetailsAsync(SqlConnection connection, long userId)
+        [HttpDelete]
+        [Route("EliminarReceta")]
+        public IActionResult EliminarReceta(int recipeId)
         {
-            using var command = new SqlCommand("GetFavoriteRecipes", connection)
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.AddWithValue("@UserId", userId);
+                var respuesta = new Respuesta();
 
-            using var reader = await command.ExecuteReaderAsync();
-            var result = new List<dynamic>();
-
-            while (await reader.ReadAsync())
-            {
-                result.Add(new
+                try
                 {
-                    RecipeId = reader.GetInt64(0),
-                    RecipeName = reader.GetString(1),
-                    CategoryName = reader.GetString(2),
-                    Ingredients = reader.IsDBNull(3) ? null : reader.GetString(3).Split("; ").Select(i =>
+                    var rowsAffected = context.Execute("DeleteRecipe", new { RecipeId = recipeId }, commandType: CommandType.StoredProcedure);
+
+                    if (rowsAffected > 0)
                     {
-                        var parts = i.Split(':');
-                        return new { Name = parts[0], Quantity = parts.Length > 1 ? parts[1] : null };
-                    }).ToList(),
-                    Steps = reader.IsDBNull(4) ? null : reader.GetString(4).Split("; ").Select(s =>
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Receta eliminado exitosamente.";
+                    }
+                    else
                     {
-                        var parts = s.Split(": ");
-                        return new { StepNumber = int.Parse(parts[0]), Description = parts.Length > 1 ? parts[1] : null };
-                    }).ToList()
-                });
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "Receta no encontrado.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    respuesta.Codigo = 500;
+                    respuesta.Mensaje = "Error interno del servidor.";
+                }
+
+                return Ok(respuesta);
             }
-
-            return result;
         }
 
-        [HttpDelete("EliminarReceta/{recipeId}")]
-        public async Task<IActionResult> EliminarReceta(long recipeId)
+
+
+
+        [HttpGet]
+        [Route("AllRecipes")]
+        public IActionResult AllRecipes()
         {
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync();
-
-            using var command = new SqlCommand("DeleteRecipe", connection)
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.AddWithValue("@RecipeId", recipeId);
+                var respuesta = new Respuesta();
+                try
+                {
+                    var result = context.Query<RecipesALL>("GetAllRecipes", commandType: System.Data.CommandType.StoredProcedure);
+                    respuesta.Codigo = 1;
+                    respuesta.Contenido = result;
+                }
+                catch (Exception ex)
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = ex.Message;
+                }
 
-            var rowsAffected = await command.ExecuteNonQueryAsync();
-            if (rowsAffected == 0)
-                return NotFound(new { Message = "Receta no encontrada." });
-
-            return Ok(new { Message = "Receta eliminada exitosamente." });
+                return Ok(respuesta);
+            }
         }
+
+
 
         [HttpGet("ObtenerRecetasDestacadas")]
         public async Task<IActionResult> ObtenerRecetasDestacadas()
