@@ -601,7 +601,6 @@ BEGIN
            [UseTempPassword],
            [Validity],
            [CreatedUser],
-           [ProfilePicture],
 		   [FailedAttempts],
 		   [LockedUntil],
 		   [ValidatedEmail],
@@ -612,42 +611,30 @@ END
 GO
 
 
+
 CREATE PROCEDURE [dbo].[UpdateProfile]
     @Id BIGINT,
-    @Name NVARCHAR(255),
-    @Email NVARCHAR(255),
-    @ProfilePicture NVARCHAR(255),
-    @Changes NVARCHAR(MAX) OUTPUT 
+    @Name VARCHAR(255),
+    @Email VARCHAR(80)
 AS
 BEGIN
-    DECLARE @CurrentName NVARCHAR(255);
-    DECLARE @CurrentEmail NVARCHAR(255);
-    DECLARE @CurrentProfilePicture NVARCHAR(255);
-    DECLARE @ChangesLog NVARCHAR(MAX);
-
-    SELECT 
-        @CurrentName = Name,
-        @CurrentEmail = Email,
-        @CurrentProfilePicture = ProfilePicture
-    FROM dbo.Users
-    WHERE Id = @Id;
-
-    UPDATE dbo.Users
-    SET 
-        Name = CASE WHEN @Name IS NOT NULL AND @Name <> @CurrentName THEN @Name ELSE Name END,
-        Email = CASE WHEN @Email IS NOT NULL AND @Email <> @CurrentEmail THEN @Email ELSE Email END,
-        ProfilePicture = CASE WHEN @ProfilePicture IS NOT NULL THEN @ProfilePicture ELSE ISNULL(ProfilePicture, '') END
-    WHERE Id = @Id;
-
-    SET @Changes = 
-        CASE 
-            WHEN @Name IS NOT NULL AND @Name <> @CurrentName THEN 'Name changed'
-            WHEN @Email IS NOT NULL AND @Email <> @CurrentEmail THEN 'Email changed'
-            WHEN @ProfilePicture IS NOT NULL AND @ProfilePicture <> @CurrentProfilePicture THEN 'ProfilePicture changed'
-            ELSE 'No changes'
-        END;
-END
+    -- Verificar que no exista otro usuario con el mismo email o ID
+    IF NOT EXISTS(
+        SELECT 1 
+        FROM dbo.Users
+        WHERE (Email = @Email OR Id = @Id)
+          AND Id != @Id
+    )
+    BEGIN
+        -- Actualizar solo los campos Name y Email
+        UPDATE dbo.Users
+        SET Name = @Name,
+            Email = @Email
+        WHERE Id = @Id;
+    END
+END;
 GO
+
 
 CREATE PROCEDURE [dbo].[ValidarUsuario]
     @Email NVARCHAR(255)
