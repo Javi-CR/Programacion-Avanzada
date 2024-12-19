@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using TastyNet.Services;
+using Newtonsoft.Json.Linq;
 
 namespace TastyNet.Controllers
 {
@@ -90,9 +91,18 @@ namespace TastyNet.Controllers
         public IActionResult EditProfile()
         
         {
+
+            // Obtener el consecutivo del usuario desde la sesión
+            var consecutivo = HttpContext.Session.GetString("UserConsecutive");
+
+            if (string.IsNullOrEmpty(consecutivo))
+            {
+                return RedirectToAction("Login", "Login");
+            }
+
+
             using (var client = _http.CreateClient())
             {
-                var consecutivo = HttpContext.Session.GetString("UserConsecutive");
                 string url = _conf.GetSection("Variables:RutaApi").Value + "Profile/CheckUser?Consecutivo=" + consecutivo;
 
                 var response = client.GetAsync(url).Result;
@@ -138,7 +148,6 @@ namespace TastyNet.Controllers
             }
         }
 
-        
         [HttpGet]
         public IActionResult ChangePassword()
         {
@@ -183,8 +192,6 @@ namespace TastyNet.Controllers
             }
         }
 
-
-        
 
 
     }

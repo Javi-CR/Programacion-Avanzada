@@ -185,62 +185,66 @@ namespace TastyNetApi.Controllers
             }
         }
 
-        [HttpDelete]
-        [Route("DeleteAccount/{userId}")]
-        public IActionResult DeleteAccount([Required] long userId)
+
+        [HttpGet]
+        [Route("ConsultarUsuarios")]
+        public IActionResult ConsultarUsuarios()
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            if (string.IsNullOrEmpty((userId).ToString()))
-            {
-                return BadRequest("Id es requerido.");
-            }
-            if (!long.TryParse(userId.ToString(), out _))
-            {
-                return BadRequest("Id es inválido. Debe ser un número válido.");
-            }
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                context.Open();
+                var respuesta = new Respuesta();
+                var result = context.Query<Users>("GetAllUsers", new { });
 
-                using (var transaction = context.BeginTransaction())
+                if (result.Any())
                 {
-                    var respuesta = new Respuesta();
-
-                    try
-                    {
-                        var parameters = new DynamicParameters();
-                        parameters.Add("@UserId", userId);
-
-                        int rowsAffected = context.Execute("DeleteUserAccount", parameters, transaction: transaction, commandType: CommandType.StoredProcedure);
-
-                        if (rowsAffected > 0)
-                        {
-                            transaction.Commit();
-                            respuesta.Codigo = 0;
-                            respuesta.Mensaje = "Cuenta eliminada exitosamente.";
-                            return Ok(respuesta);
-                        }
-                        else
-                        {
-                            transaction.Rollback();
-                            respuesta.Codigo = -1;
-                            respuesta.Mensaje = "No se pudo eliminar la cuenta. Usuario no encontrado.";
-                            return NotFound(respuesta);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        respuesta.Codigo = -1;
-                        respuesta.Mensaje = $"Error: {ex.Message}";
-                        return StatusCode(500, respuesta);
-                    }
+                    respuesta.Codigo = 0;
+                    respuesta.Contenido = result;
                 }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "There are no registered users at this time";
+                }
+
+                return Ok(respuesta);
             }
         }
+
+
+
+        [HttpDelete]
+        [Route("DeleteAccount")]
+        public IActionResult DeleteAccount(int userId)
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                try
+                {
+                    var rowsAffected = context.Execute("DeleteUserAccount", new { UserId = userId }, commandType: CommandType.StoredProcedure);
+
+                    if (rowsAffected > 0)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Usuario eliminado exitosamente.";
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "Usuario no encontrado.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    respuesta.Codigo = 500;
+                    respuesta.Mensaje = "Error interno del servidor.";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
 
 
 

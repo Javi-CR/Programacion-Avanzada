@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -182,32 +184,66 @@ namespace TastyNetApi.Controllers
             await command.ExecuteNonQueryAsync();
         }
 
-        [HttpDelete("EliminarReceta/{recipeId}")]
-        public async Task<IActionResult> EliminarReceta(long recipeId)
+        [HttpDelete]
+        [Route("EliminarReceta")]
+        public IActionResult EliminarReceta(int recipeId)
         {
-            try
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                var connectionString = _configuration.GetConnectionString("DefaultConnection");
-                using var connection = new SqlConnection(connectionString);
-                await connection.OpenAsync();
+                var respuesta = new Respuesta();
 
-                using var command = new SqlCommand("DeleteRecipe", connection)
+                try
                 {
-                    CommandType = CommandType.StoredProcedure
-                };
-                command.Parameters.AddWithValue("@RecipeId", recipeId);
+                    var rowsAffected = context.Execute("DeleteRecipe", new { RecipeId = recipeId }, commandType: CommandType.StoredProcedure);
 
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                if (rowsAffected == 0)
-                    return NotFound(new { Message = "Receta no encontrada." });
+                    if (rowsAffected > 0)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Receta eliminado exitosamente.";
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "Receta no encontrado.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    respuesta.Codigo = 500;
+                    respuesta.Mensaje = "Error interno del servidor.";
+                }
 
-                return Ok(new { Message = "Receta eliminada exitosamente." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error al eliminar la receta: {ex.Message}");
+                return Ok(respuesta);
             }
         }
+
+
+
+
+        [HttpGet]
+        [Route("AllRecipes")]
+        public IActionResult AllRecipes()
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+                try
+                {
+                    var result = context.Query<RecipesALL>("GetAllRecipes", commandType: System.Data.CommandType.StoredProcedure);
+                    respuesta.Codigo = 1;
+                    respuesta.Contenido = result;
+                }
+                catch (Exception ex)
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = ex.Message;
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
+
 
         [HttpGet("ObtenerRecetasDestacadas")]
         public async Task<IActionResult> ObtenerRecetasDestacadas()

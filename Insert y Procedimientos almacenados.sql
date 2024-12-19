@@ -485,6 +485,28 @@ BEGIN
 END;
 GO
 
+CREATE PROCEDURE [dbo].[GetAllRecipes]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        R.[Id],
+        R.[UserId],
+        R.[CategoryId],
+        C.[Name],
+        R.[Name],
+        R.[Image],
+        R.[CreatedRecipes]
+    FROM 
+        [TastyNest].[dbo].[Recipes] R
+    LEFT JOIN 
+        [TastyNest].[dbo].[Categories] C ON R.[CategoryId] = C.[Id];
+END;
+GO
+
+
+
 CREATE PROCEDURE [dbo].[DeleteFavoritesByUserId]
     @UserId BIGINT
 AS
@@ -636,6 +658,32 @@ END;
 GO
 
 
+CREATE PROCEDURE GetAllUsers
+AS
+BEGIN
+    -- Selecciona todos los registros de la tabla Users
+    SELECT 
+          [Id],
+          [IdentificationNumber],
+          [Name],
+          [Email],
+          [Password],
+          [Active],
+          [RoleId],
+          [UseTempPassword],
+          [Validity],
+          [FailedAttempts],
+          [LockedUntil],
+          [ValidatedEmail],
+          [VerificationToken],
+          [CreatedUser]
+    FROM [TastyNest].[dbo].[Users];
+END;
+GO
+
+
+
+
 CREATE PROCEDURE [dbo].[ValidarUsuario]
     @Email NVARCHAR(255)
 AS
@@ -764,10 +812,17 @@ END;
 GO
 
 CREATE PROCEDURE [dbo].[DeleteUserAccount]
-    @UserId BIGINT
+    @UserId INT
 AS
 BEGIN
-    DELETE FROM Users WHERE Id = @UserId;
+    SET NOCOUNT ON;
+
+    
+    IF EXISTS (SELECT 1 FROM [TastyNest].[dbo].[Users] WHERE [Id] = @UserId)
+    BEGIN
+        DELETE FROM [TastyNest].[dbo].[Users]
+        WHERE [Id] = @UserId;
+    END
 END;
 GO
 

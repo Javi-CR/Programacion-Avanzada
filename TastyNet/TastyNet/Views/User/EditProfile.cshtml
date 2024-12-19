@@ -1,6 +1,21 @@
 ﻿@model Users
 @{
     Layout = "~/Views/Shared/_LayoutDash.cshtml";
+
+    var nombreUsuario = "Guest";
+    var Correo = "...";
+
+    // Verifica si hay un valor en la sesión y asigna el valor
+    if (Context.Session.GetString("UserName") != null)
+    {
+        nombreUsuario = Context.Session.GetString("UserName");
+    }
+
+    if (Context.Session.GetString("UserEmail") != null)
+    {
+        Correo = Context.Session.GetString("UserEmail");
+    }
+
 }
 <!-- Page Title -->
 <div class="page-title" data-aos="fade">
@@ -21,13 +36,13 @@
             <div class="row d-flex justify-content-center text-center">
                 <div class="col-lg-8">
 
-         
+
                     <div class="profile img">
                         <img src="https://avatars.githubusercontent.com/u/101346449?v=4" alt="">
                     </div>
-        
-                    <h1>Edit Profile</h1>
-                    <p class="mb-0">Username + Email</p>
+
+                    <h1>My account</h1>
+                    <p class="mb-0">@nombreUsuario (@Correo)</p>
 
                 </div>
             </div>
