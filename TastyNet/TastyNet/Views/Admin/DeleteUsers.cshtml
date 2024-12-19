@@ -1,9 +1,105 @@
-﻿@{
+﻿@model List<Users>
+@{
     Layout = "~/Views/Shared/_LayoutDash.cshtml";
 }
 
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Lista de Usuarios</h5>
+
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-danger">
+                <strong>@ViewBag.Message</strong>
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table id="example" class="table text-nowrap align-middle mb-0">
+                <thead>
+                    <tr class="border-2 border-bottom border-primary border-0">
+                        <th>#</th>
+                        <th>Identificación</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.IdentificationNumber</td>
+                            <td>@item.Name</td>
+                            <td>@item.Email</td>
+                            <td>@item.RoleId</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Edit Section -->
+<section class="contact section">
+
+    <div class="heading">
+        <div class="container">
+            <div class="row d-flex justify-content-center text-center">
+                <div class="col-lg-8">
+
+
+                    <h1>Delete Users by ID</h1>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <form method="post" asp-action="DeleteUser" asp-controller="Admin" class="php-email-form" data-aos-delay="300">
+    
+        <div class="row gy-4 d-flex justify-content-center">
+
+            <div class="col-md-8">
+                <input type="number" name="id" class="form-control" placeholder="User Id" required>
+            </div>
+
+            <div class="col-md-12 text-center">
+                <button type="submit" class="btn btn-primary">Delete</button>
+            </div>
+
+        </div>
+    </form>
+</section>
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script>
+
+    $(document).ready(function () {
+        $('#example').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/2.1.8/i18n/es-ES.json',
+            },
+            columnDefs: [
+                { targets: [0, 1, 2, 3, 4], type: "string" }
+            ]
+        });
+    });
+
+    $(document).on("click","#AbrirModal", function(){
+
+      $("#Nombre").text( $(this).attr("data-nombre") );
+      $("#Consecutivo").val( $(this).attr("data-consecutivo") );
+
+    });
+
+</script>

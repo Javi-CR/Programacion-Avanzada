@@ -212,7 +212,7 @@ namespace TastyNetApi.Controllers
         }
 
 
-        [AllowAnonymous]
+
         [HttpGet]
         [Route("AllRecipes")]
         public IActionResult AllRecipes()
@@ -220,17 +220,16 @@ namespace TastyNetApi.Controllers
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new Respuesta();
-                var result = context.Query<RecipesALL>("GetAllRecipes", new { });
-
-                if (result.Any())
+                try
                 {
-                    respuesta.Codigo = 0;
+                    var result = context.Query<RecipesALL>("GetAllRecipes", commandType: System.Data.CommandType.StoredProcedure);
+                    respuesta.Codigo = 1;
                     respuesta.Contenido = result;
                 }
-                else
+                catch (Exception ex)
                 {
-                    respuesta.Codigo = -1;
-                    respuesta.Mensaje = "There are no products recorded at this time";
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = ex.Message;
                 }
 
                 return Ok(respuesta);

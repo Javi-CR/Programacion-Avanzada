@@ -2,6 +2,7 @@
 using static System.Net.WebRequestMethods;
 using System.Text.Json;
 using TastyNet.Models;
+using System.Net.Http.Headers;
 
 namespace TastyNet.Controllers
 {
@@ -26,38 +27,112 @@ namespace TastyNet.Controllers
         }
 
         [HttpGet]
-        public IActionResult AllRecipes()
+        public async Task<IActionResult> DeleteRecipes()
         {
-            var datos = AllRecipe();
-            return View(datos);
+            var recipes = new List<RecipesALL>();
+
+            try
+            {
+                var client = _http.CreateClient();
+                var apiUrl = $"{_conf["Variables:RutaApi"]}Recetas/AllRecipes";
+
+                var response = await client.GetAsync(apiUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var respuesta = JsonSerializer.Deserialize<Respuesta>(content, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (respuesta != null && respuesta.Codigo == 1)
+                    {
+                        recipes = JsonSerializer.Deserialize<List<RecipesALL>>(respuesta.Contenido.ToString());
+                    }
+                }
+                else
+                {
+                    ViewBag.Message = "Error al obtener las recetas. Por favor, intente de nuevo.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Message = $"Error: {ex.Message}";
+            }
+
+            return View(recipes);
         }
+
 
         [HttpGet]
-        public IActionResult DeleteUsers()
+        public async Task<IActionResult> DeleteUsers()
         {
-            return View();
-        }
+            var users = new List<Users>();
 
-
-
-        private List<RecipesALL> AllRecipe()
-        {
-            using (var client = _http.CreateClient())
+            try
             {
-                string url = _conf.GetSection("Variables:RutaApi").Value + "Recetas/AllRecipes";
+                var client = _http.CreateClient();
+                var apiUrl = $"{_conf["Variables:RutaApi"]}User/ConsultarUsuarios";
 
-                var response = client.GetAsync(url).Result;
-                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+                var response = await client.GetAsync(apiUrl);
 
-                if (result != null && result.Codigo == 0)
+                if (response.IsSuccessStatusCode)
                 {
-                    var datosContenido = JsonSerializer.Deserialize<List<RecipesALL>>((JsonElement)result.Contenido!);
-                    return datosContenido!.ToList();
-                }
+                    var content = await response.Content.ReadAsStringAsync();
+                    var respuesta = JsonSerializer.Deserialize<Respuesta>(content, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
-                return new List<RecipesALL>();
+                    if (respuesta != null && respuesta.Codigo == 1)
+                    {
+                        users = JsonSerializer.Deserialize<List<Users>>(respuesta.Contenido.ToString());
+                    }
+                }
+                else
+                {
+                    ViewBag.Message = "Error al obtener usuarios. Por favor, intente de nuevo.";
+                }
             }
+            catch (Exception ex)
+            {
+                ViewBag.Message = $"Error: {ex.Message}";
+            }
+
+            return View(users);
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(long id)
+        {
+            try
+            {
+                var client = _http.CreateClient();
+                var apiUrl = $"{_conf["Variables:RutaApi"]}User/DeleteAccount?userId={id}";
+
+                var response = await client.DeleteAsync(apiUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    ViewBag.Message = "Usuario eliminado exitosamente.";
+                    return RedirectToAction("DeleteUsers", "Admin");
+                }
+                else
+                {
+                    ViewBag.Message = "Error al eliminar el usuario. Por favor, intente nuevamente.";
+                    return RedirectToAction("DeleteUsers", "Admin");
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Message = $"Error: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
+        }
+
 
 
     }

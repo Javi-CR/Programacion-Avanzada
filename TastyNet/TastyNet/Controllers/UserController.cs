@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using TastyNet.Services;
+using Newtonsoft.Json.Linq;
 
 namespace TastyNet.Controllers
 {
@@ -138,7 +139,6 @@ namespace TastyNet.Controllers
             }
         }
 
-        
         [HttpGet]
         public IActionResult ChangePassword()
         {
@@ -183,8 +183,6 @@ namespace TastyNet.Controllers
             }
         }
 
-
-        
 
 
     }
