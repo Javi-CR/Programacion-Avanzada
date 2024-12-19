@@ -3,9 +3,11 @@ using static System.Net.WebRequestMethods;
 using System.Text.Json;
 using TastyNet.Models;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TastyNet.Controllers
 {
+    [Authorize(Roles = "1")]
     public class Admin : Controller
     {
 
@@ -133,6 +135,34 @@ namespace TastyNet.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteRecipe(long id)
+        {
+            try
+            {
+                var client = _http.CreateClient();
+                var apiUrl = $"{_conf["Variables:RutaApi"]}Recetas/EliminarReceta?recipeId={id}";
+
+                var response = await client.DeleteAsync(apiUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    ViewBag.Message = "Receta eliminado exitosamente.";
+                    return RedirectToAction("DeleteRecipes", "Admin");
+                }
+                else
+                {
+                    ViewBag.Message = "Error al eliminar la Receta. Por favor, intente nuevamente.";
+                    return RedirectToAction("DeleteRecipes", "Admin");
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Message = $"Error: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
+        }
 
 
     }
