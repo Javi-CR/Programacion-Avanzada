@@ -12,8 +12,8 @@ using TastyNetApi.Models;
 namespace TastyNetApi.Migrations
 {
     [DbContext(typeof(TastyNestDbContext))]
-    [Migration("20241218161248_Iniciar")]
-    partial class Iniciar
+    [Migration("20241220002811_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
