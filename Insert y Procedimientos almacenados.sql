@@ -788,7 +788,7 @@ CREATE PROCEDURE [dbo].[VerifyToken]
     @VerificationToken NVARCHAR(100)
 AS
 BEGIN
-    IF NOT EXISTS (
+    IF EXISTS (
         SELECT 1 
         FROM dbo.Users 
         WHERE VerificationToken = @VerificationToken
